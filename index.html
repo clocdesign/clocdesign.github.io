@@ -492,7 +492,7 @@
                         <div class="item-scroll ar-panoramico"><img src="img/3e6af7236285489.68e84f1074ccb.avif" alt="Placeholder" decoding="async"></div>
 
                         <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126044153">
-                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126044153?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126044153?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
 
                         <div class="item-scroll ar-cuadrado"><img src="img/Untitled-2 (2).avif" alt="Placeholder" decoding="async"></div>
@@ -500,11 +500,11 @@
                         <div class="item-scroll ar-panoramico"><img src="img/dba42c236285489.68e875406b5ad (1).avif" alt="Placeholder" decoding="async"></div>
 
                         <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126066014">
-                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126066014?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126066014?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
 
                         <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126095799">
-                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126095799?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126095799?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
 
                         <div class="item-scroll ar-panoramico"><img src="img/06c3e1236285489.68e8b5de7c101.avif" alt="Placeholder" decoding="async"></div>
@@ -519,10 +519,10 @@
                     </div>
                     <div class="galeria-horizontal">
                         <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1182352140">
-                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1182352140?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1182352140?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
                         <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="AQUI_ID_VIDEO_2">
-                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/AQUI_ID_VIDEO_2?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/AQUI_ID_VIDEO_2?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
                         <div class="item-scroll ar-cuadrado"><img src="https://via.placeholder.com/600x600/020202/cc00cc?text=IMG_01" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-retrato"><img src="https://via.placeholder.com/480x600/020202/cc00cc?text=IMG_02" alt="Placeholder" decoding="async"></div>
@@ -971,15 +971,17 @@
                         if (!iframe.vPlayer) {
                             iframe.vPlayer = new Vimeo.Player(iframe);
                             iframe.vPlayer.ready().then(() => {
+                                iframe.vPlayer.setMuted(true).catch(() => {}); // Forzar silencio interno
                                 iframe.vPlayer.setPlaybackRate(1.3).catch(() => {});
                             });
                         }
 
-                        // Magia anti-lag: Solo reproduce si el usuario lo está viendo en pantalla
                         if (entry.isIntersecting) {
-                            iframe.vPlayer.play().catch(() => {});
+                            // Los móviles requieren confirmar el silencio justo antes del play
+                            iframe.vPlayer.setMuted(true).then(() => {
+                                iframe.vPlayer.play().catch(() => {});
+                            });
                         } else {
-                            // Pausa inmediata si está oculto o el acordeón está cerrado
                             iframe.vPlayer.pause().catch(() => {}); 
                         }
                     });
