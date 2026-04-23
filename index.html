@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYS.DANIEL.LUGO // CLOC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;800;900&family=Share+Tech+Mono&family=Syncopate:wght@700&family=Teko:wght@700&family=Libre+Barcode+39+Extended+Text&display=swap" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://player.vimeo.com">
+    <link rel="preconnect" href="https://i.vimeocdn.com">
+    <link rel="preconnect" href="https://f.vimeocdn.com">
+    
+    <style>
+        :root {
+            --fondo: #020202; 
+            --texto: #f0f0f0;
+            --acento: #cc00cc; 
+            --ui-dim: rgba(204, 0, 204, 0.4);
+            --hud-text: #888;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+
+        body {
+            background-color: var(--fondo);
+            color: var(--texto);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- DETALLES DE FONDO --- */
+        .ambient-glow { position: fixed; border-radius: 50%; filter: blur(150px); opacity: 0.15; z-index: -3; pointer-events: none; }
+        .glow-1 { top: -20%; right: -10%; width: 60vw; height: 60vw; background: var(--acento); }
+        .glow-2 { bottom: -20%; left: -10%; width: 50vw; height: 50vw; background: var(--acento); }
+
+        .bg-dots {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: radial-gradient(rgba(204,0,204,0.15) 1px, transparent 1px);
+            background-size: 35px 35px; z-index: -2; pointer-events: none;
+        }
+
+        .decoracion-vertical {
+            position: fixed; top: 0; width: 1px; height: 100vh;
+            background: linear-gradient(to bottom, transparent, var(--ui-dim), rgba(204,0,204,0.8), var(--ui-dim), transparent);
+            z-index: 900; pointer-events: none; opacity: 0.3;
+        }
+        .decoracion-vertical.izq { left: 40px; }
+        .decoracion-vertical.der { right: 40px; }
+
+        .cross-mark {
+            position: fixed; color: rgba(204,0,204,0.6); font-family: 'Share Tech Mono', monospace; font-size: 12px; z-index: -1; pointer-events: none;
+        }
+        .cross-1 { top: 15%; right: 15%; }
+        .cross-2 { bottom: 25%; left: 8%; }
+        .cross-3 { top: 40%; left: 5%; }
+        .cross-4 { top: 70%; right: 8%; }
+
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; z-index: 9999; pointer-events: none; opacity: 0.35;
+        }
+
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
+            z-index: 9998; pointer-events: none;
+        }
+
+        /* HUD ELEMENTS */
+        .hud-element {
+            position: fixed; font-family: 'Share Tech Mono', monospace; color: var(--acento); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; z-index: 1000; pointer-events: none;
+        }
+        .hud-top-left { top: 20px; left: 20px; border-left: 2px solid var(--acento); padding-left: 10px; }
+        .hud-bottom-right { bottom: 20px; right: 20px; text-align: right; }
+        .hud-bottom-left { bottom: 20px; left: 20px; }
+        .barcode-text { font-family: 'Libre Barcode 39 Extended Text', cursive; font-size: 2.5rem; color: var(--acento); opacity: 0.5; display: block; margin-top: 10px; }
+
+        /* HEADER Y NAV */
+        header { position: fixed; top: 40px; left: 0; width: 100%; height: 50px; padding: 0 40px; display: flex; justify-content: flex-end; align-items: center; z-index: 10000; pointer-events: none; }
+        header * { pointer-events: auto; }
+        .logo-container { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10001; transition: transform 0.3s ease, opacity 0.4s ease-out; }
+        .logo-img { height: 42px; width: auto; filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5)); }
+        nav { display: flex; gap: 15px; }
+        nav a { font-family: 'Share Tech Mono', monospace; color: var(--texto); text-decoration: none; font-size: 0.9rem; border: 1px solid var(--ui-dim); padding: 5px 15px; text-transform: uppercase; transition: all 0.3s ease; background: rgba(0,0,0,0.5); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+        nav a:hover { background: var(--acento); color: #000; box-shadow: 0 0 15px var(--acento); }
+
+        /* HERO SECTION */
+        .hero { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .placeholder-3d { position: absolute; width: 40vw; height: 40vw; max-width: 500px; max-height: 500px; border: 1px dashed var(--ui-dim); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: 'Share Tech Mono', monospace; color: var(--ui-dim); z-index: 1; transition: transform 0.1s ease-out; box-shadow: inset 0 0 50px rgba(204, 0, 204, 0.1); }
+        .placeholder-3d::before { content: "[ 3D ASSET PLACEHOLDER ]"; animation: blink 2s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .cta-container { z-index: 2; text-align: center; pointer-events: auto; width: 100%; }
+        .cta-gigante { text-decoration: none; display: inline-block; color: var(--texto); width: 100%; }
+        .nombre-colosal { font-size: 20vw; font-weight: 700; line-height: 0.8; letter-spacing: -0.04em; text-transform: uppercase; text-shadow: 0 5px 20px rgba(0,0,0,0.8); text-align: center; }
+        .cypher-text { font-family: 'Syncopate', sans-serif; display: inline-block; }
+        .cypher-text.decrypted { font-family: 'Montserrat', sans-serif; }
+        .palabra-glow { display: inline-block; }
+        .cta-gigante:hover .palabra-glow, .cta-gigante.activado .palabra-glow { animation: encendido-suave 0.8s ease-out forwards; }
+        @keyframes encendido-suave { 0% { color: var(--texto); text-shadow: none; } 100% { color: var(--acento); text-shadow: 0 0 10px rgba(204,0,204,0.8), 0 0 30px rgba(204,0,204,0.6), 0 0 60px rgba(204,0,204,0.4); } }
+        .subtitulo-hero { font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; color: var(--hud-text); text-align: center; margin-top: 15px; width: 100%; }
+
+        /* ABOUT SECTION */
+        .about-flex { display: flex; align-items: center; justify-content: space-between; gap: 80px; width: 100%; max-width: 1500px; margin: 0 auto; perspective: 1000px; }
+        .about-text-content { flex: 1.2; text-align: left; position: relative; }
+        .about-text-content::before { content: ''; position: absolute; left: -20px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--acento), transparent); opacity: 0.5; }
+        .titulo-seccion-about { font-size: 1.5vw; font-weight: 900; text-transform: uppercase; color: var(--acento); margin-bottom: 20px; letter-spacing: 2px; display: block; }
+        .texto-alto-contraste h3 { font-size: 4vw; font-weight: 900; line-height: 1.1; text-transform: uppercase; color: var(--hud-text); margin-bottom: 30px; letter-spacing: -0.02em; }
+        .texto-alto-contraste h3 span.blanco { color: #ffffff; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .texto-alto-contraste h3 span.morado { color: var(--acento); text-shadow: 0 0 30px rgba(204,0,204,0.5); }
+        .texto-alto-contraste p { font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; color: #b0b0b0; line-height: 1.6; margin-bottom: 20px; }
+        .texto-alto-contraste p.destacado { color: var(--texto); font-weight: 700; }
+        .resplandor-blanco { color: var(--texto); text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .about-visual-content { flex: 1; max-width: 540px; width: 100%; padding: 20px; }
+        .placeholder-avanzado { width: 100%; aspect-ratio: 4/5; background: rgba(5, 5, 5, 0.9); border: 2px solid var(--ui-dim); position: relative; display: flex; justify-content: center; align-items: center; clip-path: polygon(40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%, 0 40px); box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden; transform-style: preserve-3d; will-change: transform; transition: transform 0.1s ease-out, border-color 0.4s ease, box-shadow 0.4s ease; pointer-events: auto; }
+        .placeholder-avanzado.reset-animacion { transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.4s ease, box-shadow 0.4s ease; }
+        .placeholder-avanzado:hover { border-color: var(--acento); box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 50px rgba(204, 0, 204, 0.3); }
+        .foto-daniel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; z-index: 2; pointer-events: none; }
+        .cyber-grid { position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; background-image: linear-gradient(rgba(204,0,204,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(204,0,204,0.2) 2px, transparent 2px); background-size: 30px 30px; z-index: 1; pointer-events: none; transform: translateZ(-30px); }
+        .scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #fff; box-shadow: 0 0 10px #fff, 0 0 20px var(--acento), 0 0 40px var(--acento); animation: scanline 8s cubic-bezier(0.4, 0, 0.2, 1) infinite; opacity: 0.8; z-index: 5; pointer-events: none; }
+        
+        /* SECCIONES COMPARTIDAS */
+        .seccion { padding: 100px 10vw; position: relative; z-index: 10; scroll-margin-top: 100px; }
+        .inner-container { max-width: 1500px; margin: 0 auto; width: 100%; }
+        .wrapper-alineacion { max-width: 1500px; margin: 0 auto; padding-left: 10vw; padding-right: 10vw; width: 100%; box-sizing: border-box; }
+
+        /* --- SISTEMA DE PROYECTOS --- */
+        .encabezado-servicios {
+            display: flex; justify-content: space-between; border-bottom: 2px solid var(--ui-dim);
+            padding-bottom: 10px; margin-bottom: 20px; font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--hud-text); text-transform: uppercase;
+        }
+
+        .lista-acordeon { width: 100%; border-top: 1px solid var(--ui-dim); }
+        .item-acordeon { border-bottom: 1px solid var(--ui-dim); }
+
+        .btn-acordeon {
+            width: 100%; display: flex; align-items: center; padding: 40px 0;
+            background: transparent; border: none; outline: none; cursor: pointer;
+            color: var(--texto); font-family: 'Montserrat', sans-serif; font-size: 3vw; 
+            font-weight: 700; text-transform: uppercase; transition: color 0.3s;
+            text-align: left; justify-content: flex-start; 
+            white-space: nowrap; 
+        }
+        .btn-acordeon:hover { color: var(--acento); }
+        .icono-acordeon { font-family: 'Share Tech Mono', monospace; font-size: 3vw; margin-right: 40px; color: var(--hud-text); transition: transform 0.3s, color 0.3s; display: inline-block; }
+        .btn-acordeon.activo .icono-acordeon { color: var(--acento); transform: rotate(45deg); }
+        
+        /* OPTIMIZACIÓN DE RENDIMIENTO EN EL ACORDEÓN */
+        .contenido-acordeon { 
+            max-height: 0; overflow: hidden; 
+            transition: max-height 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+            will-change: max-height; 
+        }
+        
+        /* --- ESTILOS DEL TEXTO Y TYPEWRITER --- */
+        .info-proyectos-container {
+            display: flex; flex-direction: column; 
+            margin-bottom: 45px; 
+        }
+        .info-categoria { 
+            font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; 
+            color: var(--hud-text); margin-bottom: 35px !important; 
+            display: block;
+        }
+        .info-categoria span { color: var(--acento); }
+        
+        .proyecto-destacado {
+            display: flex;
+            align-items: center; 
+            justify-content: space-between;
+            gap: 40px;
+            width: 100%;
+        }
+        .proyecto-destacado h4 {
+            font-family: 'Share Tech Mono', monospace; color: var(--texto);
+            font-size: 2.4rem; 
+            margin-bottom: 0; text-transform: uppercase; letter-spacing: 1px;
+            flex: 0 0 35%; 
+        }
+        .proyecto-destacado p {
+            font-family: 'Montserrat', sans-serif; color: #b0b0b0;
+            font-size: 0.95rem; line-height: 1.6; margin-bottom: 0;
+            flex: 1; 
+            text-wrap: pretty; 
+        }
+        
+        /* Cursor Parpadeante Cyberpunk */
+        .type-target::after {
+            content: '█'; opacity: 1; animation: blink-cursor 1s infinite step-end;
+            display: inline-block; margin-left: 5px; color: var(--acento);
+        }
+        .type-target.typing-done::after { display: none; }
+        @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* --- CONTENEDOR DEL SCROLL --- */
+        .galeria-horizontal {
+            display: flex; gap: 20px;
+            padding-bottom: 40px; width: 100vw; 
+            margin-left: calc(-50vw + 50%); 
+            overflow-x: auto; cursor: grab; scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; 
+        }
+        .galeria-horizontal:active { cursor: grabbing; }
+        .galeria-horizontal::-webkit-scrollbar { display: none; }
+        .galeria-horizontal { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- ZOOM GLOBAL DEL ITEM Y COLOR REAL DE LA IMAGEN --- */
+        .item-scroll {
+            flex: 0 0 auto; height: 380px; 
+            position: relative; background: #0a0a0a; border: 1px solid var(--ui-dim); overflow: hidden; 
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+        }
+        
+        .item-scroll:hover {
+            transform: scale(1.03);
+            z-index: 10;
+            box-shadow: 0 15px 40px rgba(204, 0, 204, 0.2);
+            border-color: var(--acento);
+        }
+
+        .ar-cuadrado { aspect-ratio: 1 / 1; }      
+        .ar-retrato { aspect-ratio: 4 / 5; }   
+        .ar-panoramico { aspect-ratio: 16 / 9; }
+
+        .item-scroll img {
+            width: 100%; height: 100%; object-fit: cover; 
+            user-select: none; -webkit-user-drag: none; pointer-events: none; 
+        }
+
+        /* --- ESTILOS DE VIDEO Y REPRODUCTOR --- */
+        .iframe-bg {
+            /* AJUSTE A 100% PARA VIDEOS 1920x1080 (16:9 EXACTO) */
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; /* VITAL para no bloquear el drag and drop del carrusel */
+            border: none;
+        }
+        
+        .play-overlay {
+            display: none; /* BOTÓN OCULTO DEFINITIVAMENTE */
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 70px; height: 70px; background: rgba(2, 2, 2, 0.7);
+            border: 2px solid var(--acento); border-radius: 50%;
+            justify-content: center; align-items: center;
+            z-index: 5; box-shadow: 0 0 15px rgba(204, 0, 204, 0.3); 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s, background 0.3s;
+            pointer-events: none; 
+        }
+        .item-scroll:hover .play-overlay { 
+            transform: translate(-50%, -50%) scale(1.15); 
+            background: rgba(204, 0, 204, 0.2);
+            box-shadow: 0 0 30px rgba(204, 0, 204, 0.8), inset 0 0 15px rgba(204, 0, 204, 0.5);
+        }
+        .play-triangle { 
+            width: 0; height: 0; 
+            border-top: 12px solid transparent; border-bottom: 12px solid transparent; 
+            border-left: 20px solid var(--acento); margin-left: 6px; 
+            filter: drop-shadow(0 0 5px var(--acento));
+        }
+
+        /* --- LIGHTBOX --- */
+        .lightbox {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(2, 2, 2, 0.95); z-index: 999999;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .lightbox.active { opacity: 1; pointer-events: auto; }
+        .lightbox-img {
+            max-width: 90vw; max-height: 85vh; border: 1px solid var(--ui-dim);
+            box-shadow: 0 0 50px rgba(204, 0, 204, 0.15); 
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            user-select: none;
+        }
+        
+        .lightbox-iframe {
+            max-width: 90vw; width: 1200px; max-height: 85vh; aspect-ratio: 16/9;
+            border: 1px solid var(--ui-dim); background: #000;
+            box-shadow: 0 0 50px rgba(204, 0, 204, 0.15); 
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            display: none; 
+        }
+
+        .lightbox-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            font-size: 2.5rem; color: var(--hud-text); cursor: pointer;
+            user-select: none; transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace; padding: 20px;
+        }
+        .lightbox-btn:hover { color: var(--acento); text-shadow: 0 0 15px var(--acento); transform: translateY(-50%) scale(1.2); }
+        .lightbox-prev { left: 2vw; }
+        .lightbox-next { right: 2vw; }
+        .lightbox-close {
+            position: absolute; top: 30px; right: 40px;
+            font-size: 3rem; color: var(--hud-text); cursor: pointer;
+            user-select: none; transition: all 0.2s;
+            font-family: 'Montserrat', sans-serif; font-weight: 300; line-height: 1;
+        }
+        .lightbox-close:hover { color: var(--acento); transform: scale(1.2) rotate(90deg); }
+
+        /* REVEAL ANIMATION */
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.1s; }
+
+        /* RESPONSIVO MÓVIL */
+        @media (max-width: 768px) {
+            .nombre-colosal { font-size: 15vw; }
+            header { justify-content: center; top: 20px; }
+            nav { display: none; }
+            .decoracion-vertical, .cross-mark { display: none; }
+            .about-flex { flex-direction: column-reverse; gap: 50px; perspective: none; }
+            .about-text-content { text-align: left; }
+            .about-text-content::before { left: -10px; }
+            .titulo-seccion-about { font-size: 6vw; }
+            .texto-alto-contraste h3 { font-size: 7.5vw; }
+            .texto-alto-contraste p { font-size: 1rem; }
+            .about-visual-content { padding: 0; }
+            .placeholder-avanzado { aspect-ratio: 1/1; max-width: 100%; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); transform: none !important; }
+            
+            .btn-acordeon { font-size: 4.5vw; padding: 25px 0; white-space: nowrap; } 
+            .icono-acordeon { font-size: 6vw; margin-right: 10px; }
+            
+            .proyecto-destacado { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .proyecto-destacado h4 { font-size: 1.8rem; }
+            .proyecto-destacado p { font-size: 0.85rem; max-width: 100%; }
+            .info-categoria { margin-bottom: 20px !important; }
+            
+            .galeria-horizontal { gap: 15px; } 
+            .item-scroll { height: 260px; } 
+            .encabezado-servicios { font-size: 0.6rem; }
+            .lightbox-img, .lightbox-iframe { max-width: 95vw; max-height: 70vh; }
+            .lightbox-btn { font-size: 2rem; padding: 10px; }
+            .lightbox-prev { left: 0; }
+            .lightbox-next { right: 0; }
+            .play-overlay { width: 50px; height: 50px; }
+            .play-triangle { border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 14px solid var(--acento); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="bg-dots"></div>
+    <div class="decoracion-vertical izq"></div>
+    <div class="decoracion-vertical der"></div>
+    <div class="cross-mark cross-1">+</div>
+    <div class="cross-mark cross-2">+</div>
+    <div class="cross-mark cross-3">+</div>
+    <div class="cross-mark cross-4">+</div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div class="hud-element hud-top-left">SYS.INIT_ // OK<br>USR // D.LUGO<br>LOC // GNS_VZLA</div>
+    <div class="hud-element hud-bottom-left">> 10.4685 N<br>> 66.6111 W<span class="barcode-text">D.LUGO-2026</span></div>
+    <div class="hud-element hud-bottom-right" id="reloj-hud">--:--:--</div>
+
+    <header>
+        <a href="#" class="logo-container" id="main-logo"><img src="logo.png" alt="CLOC" class="logo-img"></a>
+        <nav>
+            <a href="#about">ABOUT ME</a>
+            <a href="#trabajo">WORK</a>
+            <a href="#contacto">CONTACT</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="placeholder-3d" id="esfera-3d"></div>
+        <div class="cta-container">
+            <a href="#contacto" class="cta-gigante" id="cta-decrypter">
+                <div class="nombre-colosal"><span class="cypher-text" data-target="LET'S">10.4685</span></div>
+                <div class="nombre-colosal"><span class="palabra-glow cypher-text" data-target="BUILD!">66.6111</span></div>
+            </a>
+            <div class="subtitulo-hero">> CYBERPUNK_AESTHETICS & PIXEL_ART_SYSTEMS_</div>
+        </div>
+    </section>
+
+    <section id="about" class="seccion">
+        <div class="about-flex">
+            <div class="about-text-content reveal delay-1">
+                <span class="titulo-seccion-about">ABOUT ME</span>
+                <div class="texto-alto-contraste">
+                    <h3><span class="blanco">SOY</span> <span class="morado">DANIEL LUGO,</span> <br><span class="blanco">EL DISEÑADOR DETRÁS DE</span> <br><span class="morado">CLOC.</span></h3>
+                    <p class="destacado">O mejor dicho, soy la única persona detrás de CLOC...</p>
+                    <p>Soy un diseñador gráfico venezolano con más de 5 años de experiencia. Me especializo en branding, fotomanipulación y diseño estratégico para redes sociales, colaborando principalmente con empresas del ecosistema Web3, criptomonedas y blockchain.</p>
+                    <p>Mi enfoque es transformar conceptos técnicos o complejos en ecosistemas visuales funcionales, minimalistas y de alto impacto. <span class="resplandor-blanco">No solo diseño para que se vea bien; priorizo la estrategia detrás del diseño para garantizar los resultados que necesitas.</span></p>
+                </div>
+            </div>
+            <div class="about-visual-content reveal delay-2">
+                <div class="placeholder-avanzado" id="tarjeta-foto">
+                    <img src="foto-daniel.png" alt="Daniel Lugo" class="foto-daniel">
+                    <div class="cyber-grid"></div>
+                    <div class="scanner-line"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="trabajo" class="seccion" style="padding-left: 0; padding-right: 0;">
+        <div class="wrapper-alineacion">
+            <span class="titulo-seccion-about reveal" style="margin-bottom: 30px;">MIS PROYECTOS</span>
+            <div class="encabezado-servicios reveal">
+                <span>SYSTEM_MODULES [03]</span>
+                <span>DATA_ENTRIES [40]</span> 
+            </div>
+        </div>
+
+        <div class="lista-acordeon reveal delay-1">
+            
+            <div class="item-acordeon">
+                <div class="wrapper-alineacion">
+                    <button class="btn-acordeon">
+                        <span class="icono-acordeon">+</span> Diseño para Redes Sociales
+                    </button>
+                </div>
+                <div class="contenido-acordeon">
+                    
+                    <div class="wrapper-alineacion info-proyectos-container">
+                        <p class="info-categoria type-target" data-delay="0" data-text="Estrategia y diseño visual para ecosistemas sociales. // SOCIAL_BROADCAST">Estrategia y diseño visual para ecosistemas sociales. <span>// SOCIAL_BROADCAST</span></p>
+                        <div class="proyecto-destacado">
+                            <h4 class="type-target" data-delay="600" data-text="> YOUCOIN">> YOUCOIN_</h4>
+                            <p class="type-target" data-delay="1100" data-text="Junto con el equipo de Youcoin, apegándonos a su marca y misión, buscábamos proyectar madurez tecnológica. Transformamos su identidad hacia un ecosistema ciberpunk robótico para reflejar la ingeniería del Metaverso.">Junto con el equipo de Youcoin, apegándonos a su marca y misión, buscábamos proyectar madurez tecnológica. Transformamos su identidad hacia un ecosistema ciberpunk robótico para reflejar la ingeniería del Metaverso.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-cuadrado"><img src="img/Proyecto-YoucoinArtboard-1.avif" alt="Youcoin 1" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPortfolio1.avif" alt="Youcoin 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/Proyecto-YoucoinArtboard-2.avif" alt="Youcoin 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/Proyecto-YoucoinArtboard-6.avif" alt="Youcoin 6" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/Proyecto-YoucoinArtboard-3.avif" alt="Youcoin 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPortfolio2.avif" alt="Infographic 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/InfographicPortfolio3.avif" alt="Infographic 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/InfographicPortfolio4.avif" alt="Infographic 4" loading="lazy" decoding="async"></div>
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+                        <div class="proyecto-destacado">
+                            <h4 class="type-target" data-delay="600" data-text="> TASHI NETWORK">> TASHI NETWORK</h4>
+                            <p class="type-target" data-delay="1100" data-text="De la mano con Tashi, sistematizamos su identidad visual en redes. Implementamos una dirección de arte ciber-industrial con ilustraciones detalladas y una paleta cromática de alto contraste, garantizando coherencia tecnológica.">De la mano con Tashi, sistematizamos su identidad visual en redes. Implementamos una dirección de arte ciber-industrial con ilustraciones detalladas y una paleta cromática de alto contraste, garantizando coherencia tecnológica.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico"><img src="img/image_2026-01-30_18-32-56.avif" alt="Tashi 1" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/InfographicPort1.avif" alt="Tashi 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic19an.avif" alt="Tashi 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPort2 (1).avif" alt="Tashi 4" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/InfographicPort3.avif" alt="Tashi 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic20Jan.avif" alt="Tashi 6" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic22Jan.avif" alt="Tashi 7" loading="lazy" decoding="async"></div>
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+                        <div class="proyecto-destacado">
+                            <h4 class="type-target" data-delay="600" data-text="> ZARO COIN">> PROYECTO_03_</h4>
+                            <p class="type-target" data-delay="1100" data-text="Trabajando con el equipo de Zaro Coin, optimizamos su entorno gráfico. Estructuré una sólida arquitectura tipográfica y un balance cromático vibrante, dotando a su mascota de mayor presencia, escalabilidad y cohesión.">Expansión del ecosistema digital mediante integración de plantillas dinámicas y componentes de interfaz asíncronos. Se priorizó un diseño de alto rendimiento orientado a la retención de usuarios e interacción de la comunidad.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic3Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/Untitled-4.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic12Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/Untitled-2.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Posted_Infographic11Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/image_2025-08-12_03-30-03.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic2Au (2).avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic2Sep.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="item-acordeon">
+                <div class="wrapper-alineacion">
+                    <button class="btn-acordeon">
+                        <span class="icono-acordeon">+</span> Marca e Identidad Visual
+                    </button>
+                </div>
+                <div class="contenido-acordeon">
+                    <div class="wrapper-alineacion info-proyectos-container">
+                        <p class="info-categoria type-target" data-delay="0" data-text="Arquitectura de marca, logotipos y sistemas visuales. // CORE_IDENTITY">Arquitectura de marca, logotipos y sistemas visuales. <span>// CORE_IDENTITY</span></p>
+                        <div class="proyecto-destacado">
+                            <h4 class="type-target" data-delay="600" data-text="> WORKFLOW717">> BANANACRYSTAL_</h4>
+                            <p class="type-target" data-delay="1100" data-text="At WORKFLOW717, we embrace a modern and functional design that reflects how we naturally integrate AI into everyday life. By stripping away distractions, we empower our clients by transforming their operations into intelligent, agile, and seamless workflows.">Desarrollo de núcleo de marca y diseño de logotipos de alto impacto visual. Creación de material de marketing y comunicación estratégica para construir identidad en un programa de influencers VIP.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico"><img src="img/3e6af7236285489.68e84f1074ccb.avif" alt="Placeholder" decoding="async"></div>
+
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126044153">
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126044153?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-cuadrado"><img src="img/Untitled-2 (2).avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/c254fc236285489.68e86466324ae.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/dba42c236285489.68e875406b5ad (1).avif" alt="Placeholder" decoding="async"></div>
+
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126066014">
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126066014?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126095799">
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1126095799?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-panoramico"><img src="img/06c3e1236285489.68e8b5de7c101.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Untitled-1.avif" alt="Placeholder" decoding="async"></div>
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+                        <div class="proyecto-destacado">
+                            <h4 class="type-target" data-delay="600" data-text="> NUEVO_PROYECTO_">> NUEVO_PROYECTO_</h4>
+                            <p class="type-target" data-delay="1100" data-text="Descripción del nuevo proyecto. Aquí puedes detallar el trabajo realizado.">Descripción del nuevo proyecto. Aquí puedes detallar el trabajo realizado.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1182352140">
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/1182352140?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                        </div>
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="AQUI_ID_VIDEO_2">
+                            <iframe class="iframe-bg" src="https://player.vimeo.com/video/AQUI_ID_VIDEO_2?background=1&autoplay=1&loop=1&muted=1&autopause=0" frameborder="0" allow="autoplay"></iframe>
+                        </div>
+                        <div class="item-scroll ar-cuadrado"><img src="https://via.placeholder.com/600x600/020202/cc00cc?text=IMG_01" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="https://via.placeholder.com/480x600/020202/cc00cc?text=IMG_02" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="https://via.placeholder.com/600x338/020202/cc00cc?text=IMG_03" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="https://via.placeholder.com/600x600/020202/cc00cc?text=IMG_04" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="https://via.placeholder.com/480x600/020202/cc00cc?text=IMG_05" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="https://via.placeholder.com/600x338/020202/cc00cc?text=IMG_06" alt="Placeholder" decoding="async"></div>
+                    </div>
+                    </div>
+            </div>
+
+            <div class="item-acordeon">
+                <div class="wrapper-alineacion">
+                    <button class="btn-acordeon">
+                        <span class="icono-acordeon">+</span> Lab. Experimental
+                    </button>
+                </div>
+                <div class="contenido-acordeon">
+                    <div class="wrapper-alineacion info-proyectos-container">
+                        <p class="info-categoria type-target" data-delay="0" data-text="Exploraciones personales, fotomanipulación y arte conceptual. // R&D_TESTING">Exploraciones personales, fotomanipulación y arte conceptual. <span>// R&D_TESTING</span></p>
+                        <div class="proyecto-destacado">
+                            <h4 class="type-target" data-delay="600" data-text="> PROYECTO NUT_">> PROYECTO NUT_</h4>
+                            <p class="type-target" data-delay="1100" data-text="Diseño iterativo y desarrollo conceptual de la mascota de marca 'Nut'. Exploración visual, modelado de escenarios 3D y fotomanipulaciones avanzadas para dotar al personaje de enorme versatilidad.">Diseño iterativo y desarrollo conceptual de la mascota de marca 'Nut'. Exploración visual, modelado de escenarios 3D y fotomanipulaciones avanzadas para dotar al personaje de enorme versatilidad.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-cuadrado"><img src="https://via.placeholder.com/600x600/020202/cc00cc?text=LAB_01" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="https://via.placeholder.com/480x600/020202/cc00cc?text=LAB_02" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="https://via.placeholder.com/600x600/020202/cc00cc?text=LAB_03" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="https://via.placeholder.com/480x600/020202/cc00cc?text=LAB_04" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="https://via.placeholder.com/480x600/020202/cc00cc?text=LAB_05" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="https://via.placeholder.com/600x600/020202/cc00cc?text=LAB_06" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="https://via.placeholder.com/480x600/020202/cc00cc?text=LAB_07" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="https://via.placeholder.com/480x600/020202/cc00cc?text=LAB_08" alt="Placeholder" loading="lazy" decoding="async"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="contacto" class="seccion" style="padding-bottom: 200px;">
+        <div class="inner-container">
+            <h2 class="titulo-seccion reveal">COMM.LINK // START</h2>
+            <nav class="reveal"><a href="mailto:hola@cloc.com" style="font-size: 2rem; padding: 15px 30px; display: inline-block;">INICIAR TRANSMISIÓN</a></nav>
+        </div>
+    </section>
+
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" id="lightbox-close">&times;</span>
+        <span class="lightbox-btn lightbox-prev" id="lightbox-prev">&lt;</span>
+        <img class="lightbox-img" id="lightbox-img" src="" alt="Vista ampliada">
+        <iframe class="lightbox-iframe" id="lightbox-iframe" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        <span class="lightbox-btn lightbox-next" id="lightbox-next">&gt;</span>
+    </div>
+
+    <script src="https://player.vimeo.com/api/player.js"></script>
+
+    <script>
+        // --- LOGO FADE ---
+        window.addEventListener('scroll', () => {
+            const logo = document.getElementById('main-logo');
+            if (!logo) return;
+            const scrollPos = window.scrollY;
+            const fadeThreshold = 150;
+            const newOpacity = Math.max(0, 1 - (scrollPos / fadeThreshold));
+            logo.style.opacity = newOpacity;
+            logo.style.pointerEvents = newOpacity < 0.1 ? 'none' : 'auto';
+        });
+
+        // --- ANIMACIONES HERO ---
+        const ctaBtn = document.getElementById('cta-decrypter');
+        const cypherTexts = document.querySelectorAll('.cypher-text');
+        const alienChars = "||_//¯-";
+        const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
+        let isDecrypted = false;
+
+        function triggerDecrypt() {
+            if (isDecrypted) return; 
+            isDecrypted = true;
+            ctaBtn.classList.add('activado');
+            cypherTexts.forEach(el => {
+                const targetWord = el.getAttribute('data-target');
+                let iterations = 0;
+                el.classList.add('decrypted');
+                const interval = setInterval(() => {
+                    el.innerText = targetWord.split("").map((char, index) => {
+                        if (index < iterations) return targetWord[index];
+                        return alienChars[Math.floor(Math.random() * alienChars.length)];
+                    }).join("");
+                    if (iterations >= targetWord.length) clearInterval(interval);
+                    iterations += 0.2; 
+                }, 50);
+            });
+        }
+        ctaBtn.addEventListener('mouseenter', triggerDecrypt);
+        if (isMobile) setTimeout(triggerDecrypt, 2500);
+
+        // --- RELOJ HUD ---
+        function actualizarReloj() {
+            const ahora = new Date();
+            const reloj = document.getElementById('reloj-hud');
+            if(reloj) reloj.innerText = `SYS.TIME // ${ahora.getHours().toString().padStart(2, '0')}:${ahora.getMinutes().toString().padStart(2, '0')}:${ahora.getSeconds().toString().padStart(2, '0')}`;
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+
+        // --- EFECTOS 3D MOUSE ---
+        document.addEventListener('mousemove', (e) => {
+            if (isMobile) return; 
+            const esfera = document.getElementById('esfera-3d');
+            if(esfera) {
+                const x = (window.innerWidth / 2 - e.pageX) / 25;
+                const y = (window.innerHeight / 2 - e.pageY) / 25;
+                esfera.style.transform = `translate(${x}px, ${y}px) rotateX(${-y}deg) rotateY(${x}deg)`;
+            }
+        });
+
+        const tarjetaFoto = document.getElementById('tarjeta-foto');
+        if (!isMobile && tarjetaFoto) { 
+            tarjetaFoto.addEventListener('mousemove', (e) => {
+                tarjetaFoto.classList.remove('reset-animacion');
+                const rect = tarjetaFoto.getBoundingClientRect();
+                const x = e.clientX - rect.left; 
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -25; 
+                const rotateY = ((x - centerX) / centerX) * 25;
+                tarjetaFoto.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+            });
+            tarjetaFoto.addEventListener('mouseleave', () => {
+                tarjetaFoto.classList.add('reset-animacion');
+                tarjetaFoto.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            });
+        }
+
+        // --- FUNCIÓN DEL EFECTO DE ESCRITURA (TYPEWRITER) ---
+        function startTyping(element) {
+            const text = element.getAttribute('data-text');
+            const delay = parseInt(element.getAttribute('data-delay')) || 0;
+            
+            if (element.delayTimeout) clearTimeout(element.delayTimeout);
+            if (element.typeTimeout) clearTimeout(element.typeTimeout);
+            
+            element.innerHTML = '';
+            element.classList.remove('typing-done');
+            
+            element.delayTimeout = setTimeout(() => {
+                let i = 0;
+                function typeWriter() {
+                    if (i < text.length) {
+                        element.innerHTML = text.substring(0, i + 1);
+                        i++;
+                        const speed = element.tagName === 'H4' ? 30 : 10;
+                        element.typeTimeout = setTimeout(typeWriter, speed);
+                    } else {
+                        element.classList.add('typing-done');
+                        if (text.includes('// SOCIAL_BROADCAST')) element.innerHTML = text.replace('// SOCIAL_BROADCAST', '<span>// SOCIAL_BROADCAST</span>');
+                        if (text.includes('// CORE_IDENTITY')) element.innerHTML = text.replace('// CORE_IDENTITY', '<span>// CORE_IDENTITY</span>');
+                        if (text.includes('// R&D_TESTING')) element.innerHTML = text.replace('// R&D_TESTING', '<span>// R&D_TESTING</span>');
+                    }
+                }
+                typeWriter();
+            }, delay);
+        }
+
+        // --- LÓGICA DEL ACORDEÓN ---
+        const acordeones = document.querySelectorAll('.btn-acordeon');
+        
+        acordeones.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const contenido = this.parentElement.nextElementSibling;
+                const estaActivo = this.classList.contains('activo');
+
+                document.querySelectorAll('.btn-acordeon').forEach(otroBtn => {
+                    otroBtn.classList.remove('activo');
+                    otroBtn.querySelector('.icono-acordeon').innerText = '+';
+                    const otroContenido = otroBtn.parentElement.nextElementSibling;
+                    otroContenido.style.maxHeight = null;
+                    
+                    const targets = otroContenido.querySelectorAll('.type-target');
+                    targets.forEach(t => {
+                        if(t.delayTimeout) clearTimeout(t.delayTimeout);
+                        if(t.typeTimeout) clearTimeout(t.typeTimeout);
+                        const originalText = t.getAttribute('data-text');
+                        t.innerHTML = originalText;
+                        t.classList.add('typing-done'); 
+                        
+                        if (originalText.includes('// SOCIAL_BROADCAST')) t.innerHTML = originalText.replace('// SOCIAL_BROADCAST', '<span>// SOCIAL_BROADCAST</span>');
+                        if (originalText.includes('// CORE_IDENTITY')) t.innerHTML = originalText.replace('// CORE_IDENTITY', '<span>// CORE_IDENTITY</span>');
+                        if (originalText.includes('// R&D_TESTING')) t.innerHTML = originalText.replace('// R&D_TESTING', '<span>// R&D_TESTING</span>');
+                    });
+                });
+
+                if (!estaActivo) {
+                    this.classList.add('activo');
+                    this.querySelector('.icono-acordeon').innerText = '+';
+                    
+                    const targets = contenido.querySelectorAll('.type-target');
+                    targets.forEach(target => target.innerHTML = target.getAttribute('data-text'));
+                    
+                    contenido.style.maxHeight = contenido.scrollHeight + 400 + "px"; 
+
+                    targets.forEach(target => startTyping(target));
+                }
+            });
+        });
+
+        // --- SISTEMA DE LIGHTBOX MULTIMEDIA ---
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxIframe = document.getElementById('lightbox-iframe');
+        let currentGalleryMedia = [];
+        let currentLightboxIndex = 0;
+
+        function openLightbox(galleryElement, clickedItem) {
+            const allItems = Array.from(galleryElement.querySelectorAll('.item-scroll'));
+            currentGalleryMedia = [];
+            const seenKeys = new Set();
+            
+            // Extraer imágenes y videos únicos (filtrando los clones del scroll infinito)
+            allItems.forEach(item => {
+                const imgEl = item.querySelector('img');
+                const img = imgEl ? imgEl.src : 'video-placeholder'; // Previene el error si no hay <img>
+                const vType = item.getAttribute('data-video-type');
+                const vId = item.getAttribute('data-video-id');
+                const uniqueKey = vType ? `${vType}-${vId}` : img;
+                
+                if(!seenKeys.has(uniqueKey)) {
+                    seenKeys.add(uniqueKey);
+                    currentGalleryMedia.push({ src: img, type: vType || 'image', id: vId });
+                }
+            });
+
+            // Identificar qué clickeó el usuario
+            const cImgEl = clickedItem.querySelector('img');
+            const cImg = cImgEl ? cImgEl.src : 'video-placeholder';
+            const cType = clickedItem.getAttribute('data-video-type');
+            const cId = clickedItem.getAttribute('data-video-id');
+            const cKey = cType ? `${cType}-${cId}` : cImg;
+            
+            currentLightboxIndex = currentGalleryMedia.findIndex(m => {
+                const mKey = m.type !== 'image' ? `${m.type}-${m.id}` : m.src;
+                return mKey === cKey;
+            });
+            
+            if(currentLightboxIndex === -1) currentLightboxIndex = 0;
+            
+            updateLightboxContent();
+            lightbox.classList.add('active');
+        }
+
+        function updateLightboxContent() {
+            const media = currentGalleryMedia[currentLightboxIndex];
+            
+            // Resetear ambos
+            lightboxImg.style.display = 'none';
+            lightboxIframe.style.display = 'none';
+            lightboxIframe.src = ''; 
+            
+            if (media.type === 'youtube') {
+                lightboxIframe.src = `https://www.youtube.com/embed/${media.id}?autoplay=1&rel=0&modestbranding=1&color=white`;
+                lightboxIframe.style.display = 'block';
+            } else if (media.type === 'vimeo') {
+                lightboxIframe.src = `https://player.vimeo.com/video/${media.id}?autoplay=1&color=cc00cc&title=0&byline=0&portrait=0`;
+                lightboxIframe.style.display = 'block';
+                
+                // Aplicar velocidad 1.3x también al abrir en Lightbox
+                if (typeof Vimeo !== 'undefined') {
+                    const lbPlayer = new Vimeo.Player(lightboxIframe);
+                    lbPlayer.ready().then(() => {
+                        lbPlayer.setPlaybackRate(1.3).catch(e => console.warn(e));
+                    });
+                }
+                
+            } else {
+                lightboxImg.src = media.src;
+                lightboxImg.style.display = 'block';
+            }
+        }
+
+        function changeLightboxImage(dir) {
+            if(currentGalleryMedia.length === 0) return;
+            currentLightboxIndex += dir;
+            if (currentLightboxIndex < 0) currentLightboxIndex = currentGalleryMedia.length - 1;
+            if (currentLightboxIndex >= currentGalleryMedia.length) currentLightboxIndex = 0;
+            updateLightboxContent();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            setTimeout(() => { lightboxIframe.src = ''; }, 300); // Corta el audio al cerrar
+        }
+
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        document.getElementById('lightbox-prev').addEventListener('click', (e) => { e.stopPropagation(); changeLightboxImage(-1); });
+        document.getElementById('lightbox-next').addEventListener('click', (e) => { e.stopPropagation(); changeLightboxImage(1); });
+        
+        lightbox.addEventListener('click', (e) => {
+            if(e.target === lightbox) closeLightbox();
+        });
+
+        // --- LÓGICA DEL CARRUSEL INFINITO BI-DIRECCIONAL Y DRAG ---
+        const galerias = document.querySelectorAll('.galeria-horizontal');
+        let activeGallery = null; 
+        
+        galerias.forEach(galeria => {
+            galeria.addEventListener('dragstart', (e) => e.preventDefault());
+
+            const originalItems = Array.from(galeria.querySelectorAll('.item-scroll'));
+            
+            originalItems.forEach(item => {
+                const cloneRight = item.cloneNode(true);
+                galeria.appendChild(cloneRight); 
+            });
+            originalItems.slice().reverse().forEach(item => {
+                const cloneLeft = item.cloneNode(true);
+                galeria.insertBefore(cloneLeft, galeria.firstChild); 
+            });
+
+            let setWidth = 0;
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            let autoScrollInterval;
+            let isDraggingFlag = false; 
+
+            const updateLayout = () => {
+                const allItems = galeria.querySelectorAll('.item-scroll');
+                if(allItems.length === 0) return;
+                
+                const numOriginal = originalItems.length;
+                setWidth = allItems[numOriginal].offsetLeft - allItems[0].offsetLeft;
+
+                const textContainer = galeria.previousElementSibling;
+                let offsetLeft = 50; 
+                if (textContainer) {
+                    const infoText = textContainer.querySelector('.info-categoria') || textContainer.querySelector('.proyecto-destacado');
+                    if (infoText) {
+                        offsetLeft = infoText.getBoundingClientRect().left;
+                    }
+                }
+                
+                galeria.style.scrollBehavior = 'auto'; 
+                galeria.scrollLeft = setWidth - offsetLeft;
+            };
+
+            setTimeout(updateLayout, 150);
+            window.addEventListener('resize', updateLayout);
+
+            galeria.addEventListener('scroll', () => {
+                if (setWidth === 0) return;
+                if (galeria.scrollLeft < setWidth * 0.1) {
+                    galeria.style.scrollBehavior = 'auto';
+                    galeria.scrollLeft += setWidth;
+                }
+                else if (galeria.scrollLeft > setWidth * 1.9) {
+                    galeria.style.scrollBehavior = 'auto';
+                    galeria.scrollLeft -= setWidth;
+                }
+            }, { passive: true });
+
+            const startAutoScroll = () => {
+                clearInterval(autoScrollInterval); 
+                autoScrollInterval = setInterval(() => {
+                    if (isDown) return; 
+                    galeria.scrollBy({ left: 200, behavior: 'smooth' });
+                }, 3000); 
+            };
+
+            const stopAutoScroll = () => clearInterval(autoScrollInterval);
+            startAutoScroll();
+
+            const startDrag = (pageX) => {
+                isDown = true;
+                isDraggingFlag = false; 
+                activeGallery = galeria; 
+                stopAutoScroll(); 
+                galeria.style.scrollBehavior = 'auto'; 
+                startX = pageX - galeria.offsetLeft;
+                scrollLeft = galeria.scrollLeft;
+            };
+
+            galeria.endDrag = () => {
+                if(!isDown) return;
+                isDown = false; 
+                activeGallery = null;
+                galeria.style.scrollBehavior = 'smooth'; 
+                startAutoScroll(); 
+                setTimeout(() => { isDraggingFlag = false; }, 50);
+            };
+
+            const onDrag = (pageX) => {
+                if (!isDown) return;
+                const x = pageX - galeria.offsetLeft;
+                if (Math.abs(x - startX) > 5) {
+                    isDraggingFlag = true; 
+                }
+                const walk = (x - startX) * 1; 
+                galeria.scrollLeft = scrollLeft - walk; 
+            };
+
+            galeria.addEventListener('mousedown', (e) => {
+                e.preventDefault(); 
+                startDrag(e.pageX);
+            });
+            galeria.addEventListener('mousemove', (e) => onDrag(e.pageX));
+            galeria.addEventListener('mouseleave', () => galeria.endDrag());
+
+            galeria.addEventListener('touchstart', (e) => startDrag(e.touches[0].pageX), {passive: true});
+            galeria.addEventListener('touchend', () => galeria.endDrag());
+            galeria.addEventListener('touchmove', (e) => onDrag(e.touches[0].pageX), {passive: true});
+
+            // CLICK EVENT ACTUALIZADO
+            galeria.addEventListener('click', (e) => {
+                if (isDraggingFlag) {
+                    e.preventDefault();
+                    return;
+                }
+                const item = e.target.closest('.item-scroll');
+                if (item) {
+                    openLightbox(galeria, item);
+                }
+            });
+        });
+
+        window.addEventListener('mouseup', () => {
+            if(activeGallery) activeGallery.endDrag();
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+        
+        // --- SISTEMA ANTI-LAG: CONTROL INTELIGENTE DE REPRODUCCIÓN ---
+        setTimeout(() => {
+            if (typeof Vimeo !== 'undefined') {
+                const vimeoIframes = document.querySelectorAll('.iframe-bg');
+                
+                const videoObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const iframe = entry.target;
+                        
+                        if (!iframe.vPlayer) {
+                            iframe.vPlayer = new Vimeo.Player(iframe);
+                            iframe.vPlayer.ready().then(() => {
+                                iframe.vPlayer.setPlaybackRate(1.3).catch(() => {});
+                            });
+                        }
+
+                        // Magia anti-lag: Solo reproduce si el usuario lo está viendo en pantalla
+                        if (entry.isIntersecting) {
+                            iframe.vPlayer.play().catch(() => {});
+                        } else {
+                            // Pausa inmediata si está oculto o el acordeón está cerrado
+                            iframe.vPlayer.pause().catch(() => {}); 
+                        }
+                    });
+                }, { threshold: 0.05 }); 
+
+                vimeoIframes.forEach(iframe => videoObserver.observe(iframe));
+            }
+        }, 200);
+    </script>
+</body>
+</html>
