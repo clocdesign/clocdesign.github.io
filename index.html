@@ -549,7 +549,6 @@
                 top: 85px; 
             }
 
-
 /* --- CORRECCIÓN DE DESBORDAMIENTO EN ESPAÑOL --- */
         .sub-estado-2 {
             white-space: normal !important; /* Fuerza al texto a saltar a una segunda línea si no cabe */
@@ -634,54 +633,8 @@
             .proyecto-destacado p { font-size: 0.85rem; max-width: 100%; }
             .info-categoria { margin-bottom: 20px !important; }
             
-            @media (max-width: 768px) {
-    /* Bloqueamos el desborde y el rebote en la galería */
-    .galeria-horizontal {
-        display: flex;
-        overflow-x: auto;
-        overflow-y: hidden; /* Evita por completo que la galería se mueva arriba/abajo */
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch; /* Deslizamiento suave nativo de iOS */
-        gap: 12px;
-        padding: 0 10vw !important;
-        scroll-padding: 0 10vw;
-        overscroll-behavior-x: none; /* Elimina el rebote elástico lateral */
-        overscroll-behavior-y: none; /* Elimina el rebote vertical */
-    }
-
-    /* Control estricto del tamaño de cada tarjeta para evitar cajas gigantes */
-    .item-scroll {
-        flex: 0 0 80vw !important;
-        width: 80vw !important;
-        height: 45vh !important; /* Limitamos el alto al 45% de la pantalla del celular para que nunca sea gigante */
-        max-height: 320px !important; /* Techo máximo de seguridad */
-        scroll-snap-align: center;
-        scroll-snap-stop: always;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #000000; /* Fondo negro limpio si la imagen/video es más angosto */
-        border-radius: 4px;
-        overflow: hidden;
-    }
-
-    /* Aseguramos que el contenido ocupe el espacio disponible sin cortarse NUNCA */
-    .item-scroll img,
-    .item-scroll video,
-    .item-scroll iframe,
-    .item-scroll .vimeo-wrapper {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: contain !important; /* Conserva el 100% de la imagen visible sin cortes */
-        max-width: 100% !important;
-        max-height: 100% !important;
-    }
-
-    /* Desactivamos las proporciones agresivas de escritorio en móvil para que no estiren las cajas */
-    .ar-cuadrado, .ar-retrato, .ar-panoramico {
-        aspect-ratio: auto !important;
-    }
-}
+            .galeria-horizontal { gap: 15px; } 
+            .item-scroll { height: 260px; } 
             .encabezado-servicios { font-size: 0.6rem; }
             .lightbox-img, .lightbox-iframe { max-width: 95vw; max-height: 70vh; }
             .lightbox-btn { font-size: 2rem; padding: 10px; }
@@ -930,7 +883,7 @@
                         <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1182352140">
                             <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1182352140?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
-                        <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-1.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="IMG/RagAndMopArtboard-1.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-2.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-3.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-6.avif" alt="Placeholder" decoding="async"></div>
@@ -951,7 +904,7 @@
 <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1189979958">
                             <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1189979958?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
-<div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-1.avif" alt="Placeholder" decoding="async"></div>
+<div class="item-scroll ar-panoramico"><img src="IMG/NumbursArtboard-1.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-2.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-3.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-5.avif" alt="Placeholder" decoding="async"></div>
@@ -987,7 +940,7 @@
                         </div>
 
                         <div class="item-scroll ar-panoramico">
-                            <img src="img/C2.avif" alt="Lab 2" loading="lazy" decoding="async">
+                            <img src="IMG/C2.avif" alt="Lab 2" loading="lazy" decoding="async">
                         </div>
                         
                         <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1195882620">
@@ -1003,7 +956,7 @@
                         </div>
 
                         <div class="item-scroll ar-panoramico">
-                            <img src="img/C4.avif" alt="Lab 4" loading="lazy" decoding="async">
+                            <img src="IMG/C4.avif" alt="Lab 4" loading="lazy" decoding="async">
                         </div>
                         
                         <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1196161655">
@@ -1373,28 +1326,10 @@
         let activeGallery = null; 
         
         galerias.forEach(galeria => {
-            // Evitamos arrastre nativo de imágenes
             galeria.addEventListener('dragstart', (e) => e.preventDefault());
 
             const originalItems = Array.from(galeria.querySelectorAll('.item-scroll'));
-            const isMobile = window.innerWidth <= 768;
-
-            // --- MODO MÓVIL DIRECTO (SIN LOOP, SIN LAG, TOTALMENTE NATIVO) ---
-            if (isMobile) {
-                // En móvil limpiamos cualquier rastro de clonación previa para no duplicar videos de Vimeo
-                // Dejamos que el CSS Scroll Snapping nativo se encargue de todo con velocidad total.
-                galeria.style.scrollBehavior = 'smooth';
-                
-                // Forzamos pausa/reproducción básica al hacer click por si se laguean
-                galeria.addEventListener('click', (e) => {
-                    const item = e.target.closest('.item-scroll');
-                    if (item) openLightbox(galeria, item);
-                });
-                return; // Cortamos aquí para que los móviles no ejecuten código pesado de PC
-            }
-
-            // --- MODO ESCRITORIO (LOOP INFINITO Y ARRASTRE DE MOUSE) ---
-            // Clonación solo para PC
+            
             originalItems.forEach(item => {
                 const cloneRight = item.cloneNode(true);
                 galeria.appendChild(cloneRight); 
@@ -1432,9 +1367,7 @@
             };
 
             setTimeout(updateLayout, 150);
-            window.addEventListener('resize', () => {
-                if (window.innerWidth > 768) updateLayout();
-            });
+            window.addEventListener('resize', updateLayout);
 
             galeria.addEventListener('scroll', () => {
                 if (setWidth === 0) return;
@@ -1488,10 +1421,16 @@
                 galeria.scrollLeft = scrollLeft - walk; 
             };
 
-            galeria.addEventListener('mousedown', (e) => { e.preventDefault(); startDrag(e.pageX); });
+            galeria.addEventListener('mousedown', (e) => {
+                e.preventDefault(); 
+                startDrag(e.pageX);
+            });
             galeria.addEventListener('mousemove', (e) => onDrag(e.pageX));
             galeria.addEventListener('mouseleave', () => galeria.endDrag());
-            window.addEventListener('mouseup', () => { if(activeGallery === galeria) galeria.endDrag(); });
+
+            galeria.addEventListener('touchstart', (e) => startDrag(e.touches[0].pageX), {passive: true});
+            galeria.addEventListener('touchend', () => galeria.endDrag());
+            galeria.addEventListener('touchmove', (e) => onDrag(e.touches[0].pageX), {passive: true});
 
             galeria.addEventListener('click', (e) => {
                 if (isDraggingFlag) {
@@ -1499,7 +1438,9 @@
                     return;
                 }
                 const item = e.target.closest('.item-scroll');
-                if (item) openLightbox(galeria, item);
+                if (item) {
+                    openLightbox(galeria, item);
+                }
             });
         });
 
