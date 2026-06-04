@@ -507,7 +507,28 @@
             .hud-top-left { top: 75px; } /* Lo bajamos un poco para que no choque con el botón */
 
             .nombre-colosal { font-size: 15vw; white-space: nowrap; }
-            header { justify-content: center; top: 20px; }
+            /* --- CORRECCIÓN DEL LOGO Y EL HEADER --- */
+        header { 
+            justify-content: center; 
+            top: 25px; /* Lo bajamos 5px extra para despegarlo de la zona del botón */
+        }
+        
+        /* Aplica al logo, ya sea una imagen, un SVG o texto */
+        header img, header svg, .logo { 
+            transform: scale(0.85); /* Reduce el tamaño visual un 15% */
+            transform-origin: center top; 
+            max-width: 50vw; /* Asegura que nunca ocupe más de la mitad de la pantalla */
+        }
+
+/* --- CORRECCIÓN DE DESBORDAMIENTO EN ESPAÑOL --- */
+        .sub-estado-2 {
+            white-space: normal !important; /* Fuerza al texto a saltar a una segunda línea si no cabe */
+            width: 90%; /* Da un 5% de margen de respiración a cada lado de la pantalla */
+            margin: 0 auto; /* Mantiene el bloque perfectamente centrado */
+            text-align: center; 
+            line-height: 1.4; /* Espaciado cómodo si el texto se divide en dos líneas */
+            font-size: 0.75rem; /* Achica un toque la letra solo en teléfonos */
+        }
             
             /* --- A. NAVEGACIÓN MÓVIL (Sticky Bottom Bar) --- */
             /* En lugar de ocultar el menú, lo convertimos en una barra inferior estilo app */
