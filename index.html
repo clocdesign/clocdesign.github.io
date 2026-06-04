@@ -549,6 +549,7 @@
                 top: 85px; 
             }
 
+
 /* --- CORRECCIÓN DE DESBORDAMIENTO EN ESPAÑOL --- */
         .sub-estado-2 {
             white-space: normal !important; /* Fuerza al texto a saltar a una segunda línea si no cabe */
@@ -633,8 +634,32 @@
             .proyecto-destacado p { font-size: 0.85rem; max-width: 100%; }
             .info-categoria { margin-bottom: 20px !important; }
             
-            .galeria-horizontal { gap: 15px; } 
-            .item-scroll { height: 260px; } 
+            .galeria-horizontal { 
+        gap: 15px; 
+        /* 1. Activa el anclaje magnético en el eje X */
+        scroll-snap-type: x mandatory; 
+        
+        /* 2. Añade padding a los lados para que la primera y última imagen puedan quedar centradas en la pantalla */
+        padding: 0 10vw; 
+        
+        /* 3. Evita que el contenedor choque con los bordes al anclar */
+        scroll-padding: 0 10vw; 
+    } 
+
+    .item-scroll { 
+        /* 4. Quitamos el height fijo de 260px para que las imágenes no se corten */
+        height: auto; 
+        
+        /* 5. Le damos un ancho del 80% de la pantalla. El aspect-ratio que ya tienes calculará el alto perfecto */
+        width: 80vw; 
+        flex: 0 0 80vw; 
+        
+        /* 6. Centra la imagen automáticamente en la pantalla al terminar el deslizamiento */
+        scroll-snap-align: center; 
+        
+        /* 7. Evita que al hacer un swipe muy fuerte se salte varias imágenes de golpe */
+        scroll-snap-stop: always; 
+    } 
             .encabezado-servicios { font-size: 0.6rem; }
             .lightbox-img, .lightbox-iframe { max-width: 95vw; max-height: 70vh; }
             .lightbox-btn { font-size: 2rem; padding: 10px; }
@@ -1364,6 +1389,9 @@
                 
                 galeria.style.scrollBehavior = 'auto'; 
                 galeria.scrollLeft = setWidth - offsetLeft;
+                
+                // NUEVO: Reinicia la verificación del auto-scroll si se cambia el tamaño de la pantalla
+                startAutoScroll(); 
             };
 
             setTimeout(updateLayout, 150);
@@ -1383,6 +1411,10 @@
 
             const startAutoScroll = () => {
                 clearInterval(autoScrollInterval); 
+                
+                // NUEVO: Si la pantalla es de móvil (768px o menos), abortamos y no iniciamos el auto-scroll
+                if (window.innerWidth <= 768) return; 
+                
                 autoScrollInterval = setInterval(() => {
                     if (isDown) return; 
                     galeria.scrollBy({ left: 200, behavior: 'smooth' });
@@ -1428,9 +1460,17 @@
             galeria.addEventListener('mousemove', (e) => onDrag(e.pageX));
             galeria.addEventListener('mouseleave', () => galeria.endDrag());
 
-            galeria.addEventListener('touchstart', (e) => startDrag(e.touches[0].pageX), {passive: true});
-            galeria.addEventListener('touchend', () => galeria.endDrag());
-            galeria.addEventListener('touchmove', (e) => onDrag(e.touches[0].pageX), {passive: true});
+            galeria.addEventListener('touchstart', (e) => {
+    if (window.innerWidth > 768) startDrag(e.touches[0].pageX);
+}, {passive: true});
+
+galeria.addEventListener('touchend', () => {
+    if (window.innerWidth > 768) galeria.endDrag();
+});
+
+galeria.addEventListener('touchmove', (e) => {
+    if (window.innerWidth > 768) onDrag(e.touches[0].pageX);
+}, {passive: true});
 
             galeria.addEventListener('click', (e) => {
                 if (isDraggingFlag) {
