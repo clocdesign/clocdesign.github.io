@@ -636,30 +636,27 @@
             
             .galeria-horizontal { 
         gap: 15px; 
-        /* 1. Activa el anclaje magnético en el eje X */
         scroll-snap-type: x mandatory; 
-        
-        /* 2. Añade padding a los lados para que la primera y última imagen puedan quedar centradas en la pantalla */
         padding: 0 10vw; 
-        
-        /* 3. Evita que el contenedor choque con los bordes al anclar */
         scroll-padding: 0 10vw; 
+        /* NUEVO: Esto elimina el rebote elástico que te permite sacar las imágenes del marco */
+        overscroll-behavior-x: none; 
     } 
 
     .item-scroll { 
-        /* 4. Quitamos el height fijo de 260px para que las imágenes no se corten */
         height: auto; 
-        
-        /* 5. Le damos un ancho del 80% de la pantalla. El aspect-ratio que ya tienes calculará el alto perfecto */
         width: 80vw; 
         flex: 0 0 80vw; 
-        
-        /* 6. Centra la imagen automáticamente en la pantalla al terminar el deslizamiento */
         scroll-snap-align: center; 
-        
-        /* 7. Evita que al hacer un swipe muy fuerte se salte varias imágenes de golpe */
         scroll-snap-stop: always; 
-    } 
+    }
+    
+    /* NUEVO: Forzamos a que las imágenes se contengan dentro del contenedor sin recortes */
+    .item-scroll img {
+        object-fit: contain !important;
+        background: #0a0a0a; /* Mantiene el fondo oscuro si sobra un poco de espacio arriba o a los lados */
+    }
+}
             .encabezado-servicios { font-size: 0.6rem; }
             .lightbox-img, .lightbox-iframe { max-width: 95vw; max-height: 70vh; }
             .lightbox-btn { font-size: 2rem; padding: 10px; }
@@ -1354,15 +1351,19 @@
             galeria.addEventListener('dragstart', (e) => e.preventDefault());
 
             const originalItems = Array.from(galeria.querySelectorAll('.item-scroll'));
+            const isDesktop = window.innerWidth > 768;
             
-            originalItems.forEach(item => {
-                const cloneRight = item.cloneNode(true);
-                galeria.appendChild(cloneRight); 
-            });
-            originalItems.slice().reverse().forEach(item => {
-                const cloneLeft = item.cloneNode(true);
-                galeria.insertBefore(cloneLeft, galeria.firstChild); 
-            });
+            // SOLO CLONAMOS EN PC. En móvil la clonación multiplica los videos y causa el lag.
+            if (isDesktop) {
+                originalItems.forEach(item => {
+                    const cloneRight = item.cloneNode(true);
+                    galeria.appendChild(cloneRight); 
+                });
+                originalItems.slice().reverse().forEach(item => {
+                    const cloneLeft = item.cloneNode(true);
+                    galeria.insertBefore(cloneLeft, galeria.firstChild); 
+                });
+            }
 
             let setWidth = 0;
             let isDown = false;
@@ -1372,6 +1373,8 @@
             let isDraggingFlag = false; 
 
             const updateLayout = () => {
+                if (!isDesktop) return; // En móvil no necesitamos recalcular el centro artificial
+
                 const allItems = galeria.querySelectorAll('.item-scroll');
                 if(allItems.length === 0) return;
                 
@@ -1390,15 +1393,16 @@
                 galeria.style.scrollBehavior = 'auto'; 
                 galeria.scrollLeft = setWidth - offsetLeft;
                 
-                // NUEVO: Reinicia la verificación del auto-scroll si se cambia el tamaño de la pantalla
                 startAutoScroll(); 
             };
 
             setTimeout(updateLayout, 150);
-            window.addEventListener('resize', updateLayout);
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) updateLayout();
+            });
 
             galeria.addEventListener('scroll', () => {
-                if (setWidth === 0) return;
+                if (!isDesktop || setWidth === 0) return; // Solo aplicamos el loop infinito en PC
                 if (galeria.scrollLeft < setWidth * 0.1) {
                     galeria.style.scrollBehavior = 'auto';
                     galeria.scrollLeft += setWidth;
@@ -1411,10 +1415,7 @@
 
             const startAutoScroll = () => {
                 clearInterval(autoScrollInterval); 
-                
-                // NUEVO: Si la pantalla es de móvil (768px o menos), abortamos y no iniciamos el auto-scroll
-                if (window.innerWidth <= 768) return; 
-                
+                if (!isDesktop) return; // Móvil no usa auto-scroll
                 autoScrollInterval = setInterval(() => {
                     if (isDown) return; 
                     galeria.scrollBy({ left: 200, behavior: 'smooth' });
@@ -1461,16 +1462,16 @@
             galeria.addEventListener('mouseleave', () => galeria.endDrag());
 
             galeria.addEventListener('touchstart', (e) => {
-    if (window.innerWidth > 768) startDrag(e.touches[0].pageX);
-}, {passive: true});
-
-galeria.addEventListener('touchend', () => {
-    if (window.innerWidth > 768) galeria.endDrag();
-});
-
-galeria.addEventListener('touchmove', (e) => {
-    if (window.innerWidth > 768) onDrag(e.touches[0].pageX);
-}, {passive: true});
+                if (isDesktop) startDrag(e.touches[0].pageX);
+            }, {passive: true});
+            
+            galeria.addEventListener('touchend', () => {
+                if (isDesktop) galeria.endDrag();
+            });
+            
+            galeria.addEventListener('touchmove', (e) => {
+                if (isDesktop) onDrag(e.touches[0].pageX);
+            }, {passive: true});
 
             galeria.addEventListener('click', (e) => {
                 if (isDraggingFlag) {
