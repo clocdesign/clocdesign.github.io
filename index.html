@@ -634,27 +634,52 @@
             .proyecto-destacado p { font-size: 0.85rem; max-width: 100%; }
             .info-categoria { margin-bottom: 20px !important; }
             
-            .galeria-horizontal { 
-        gap: 15px; 
-        scroll-snap-type: x mandatory; 
-        padding: 0 10vw; 
-        scroll-padding: 0 10vw; 
-        /* NUEVO: Esto elimina el rebote elástico que te permite sacar las imágenes del marco */
-        overscroll-behavior-x: none; 
-    } 
-
-    .item-scroll { 
-        height: auto; 
-        width: 80vw; 
-        flex: 0 0 80vw; 
-        scroll-snap-align: center; 
-        scroll-snap-stop: always; 
+            @media (max-width: 768px) {
+    /* Bloqueamos el desborde y el rebote en la galería */
+    .galeria-horizontal {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden; /* Evita por completo que la galería se mueva arriba/abajo */
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch; /* Deslizamiento suave nativo de iOS */
+        gap: 12px;
+        padding: 0 10vw !important;
+        scroll-padding: 0 10vw;
+        overscroll-behavior-x: none; /* Elimina el rebote elástico lateral */
+        overscroll-behavior-y: none; /* Elimina el rebote vertical */
     }
-    
-    /* NUEVO: Forzamos a que las imágenes se contengan dentro del contenedor sin recortes */
-    .item-scroll img {
-        object-fit: contain !important;
-        background: #0a0a0a; /* Mantiene el fondo oscuro si sobra un poco de espacio arriba o a los lados */
+
+    /* Control estricto del tamaño de cada tarjeta para evitar cajas gigantes */
+    .item-scroll {
+        flex: 0 0 80vw !important;
+        width: 80vw !important;
+        height: 45vh !important; /* Limitamos el alto al 45% de la pantalla del celular para que nunca sea gigante */
+        max-height: 320px !important; /* Techo máximo de seguridad */
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000000; /* Fondo negro limpio si la imagen/video es más angosto */
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    /* Aseguramos que el contenido ocupe el espacio disponible sin cortarse NUNCA */
+    .item-scroll img,
+    .item-scroll video,
+    .item-scroll iframe,
+    .item-scroll .vimeo-wrapper {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important; /* Conserva el 100% de la imagen visible sin cortes */
+        max-width: 100% !important;
+        max-height: 100% !important;
+    }
+
+    /* Desactivamos las proporciones agresivas de escritorio en móvil para que no estiren las cajas */
+    .ar-cuadrado, .ar-retrato, .ar-panoramico {
+        aspect-ratio: auto !important;
     }
 }
             .encabezado-servicios { font-size: 0.6rem; }
@@ -1348,22 +1373,36 @@
         let activeGallery = null; 
         
         galerias.forEach(galeria => {
+            // Evitamos arrastre nativo de imágenes
             galeria.addEventListener('dragstart', (e) => e.preventDefault());
 
             const originalItems = Array.from(galeria.querySelectorAll('.item-scroll'));
-            const isDesktop = window.innerWidth > 768;
-            
-            // SOLO CLONAMOS EN PC. En móvil la clonación multiplica los videos y causa el lag.
-            if (isDesktop) {
-                originalItems.forEach(item => {
-                    const cloneRight = item.cloneNode(true);
-                    galeria.appendChild(cloneRight); 
+            const isMobile = window.innerWidth <= 768;
+
+            // --- MODO MÓVIL DIRECTO (SIN LOOP, SIN LAG, TOTALMENTE NATIVO) ---
+            if (isMobile) {
+                // En móvil limpiamos cualquier rastro de clonación previa para no duplicar videos de Vimeo
+                // Dejamos que el CSS Scroll Snapping nativo se encargue de todo con velocidad total.
+                galeria.style.scrollBehavior = 'smooth';
+                
+                // Forzamos pausa/reproducción básica al hacer click por si se laguean
+                galeria.addEventListener('click', (e) => {
+                    const item = e.target.closest('.item-scroll');
+                    if (item) openLightbox(galeria, item);
                 });
-                originalItems.slice().reverse().forEach(item => {
-                    const cloneLeft = item.cloneNode(true);
-                    galeria.insertBefore(cloneLeft, galeria.firstChild); 
-                });
+                return; // Cortamos aquí para que los móviles no ejecuten código pesado de PC
             }
+
+            // --- MODO ESCRITORIO (LOOP INFINITO Y ARRASTRE DE MOUSE) ---
+            // Clonación solo para PC
+            originalItems.forEach(item => {
+                const cloneRight = item.cloneNode(true);
+                galeria.appendChild(cloneRight); 
+            });
+            originalItems.slice().reverse().forEach(item => {
+                const cloneLeft = item.cloneNode(true);
+                galeria.insertBefore(cloneLeft, galeria.firstChild); 
+            });
 
             let setWidth = 0;
             let isDown = false;
@@ -1373,8 +1412,6 @@
             let isDraggingFlag = false; 
 
             const updateLayout = () => {
-                if (!isDesktop) return; // En móvil no necesitamos recalcular el centro artificial
-
                 const allItems = galeria.querySelectorAll('.item-scroll');
                 if(allItems.length === 0) return;
                 
@@ -1392,8 +1429,6 @@
                 
                 galeria.style.scrollBehavior = 'auto'; 
                 galeria.scrollLeft = setWidth - offsetLeft;
-                
-                startAutoScroll(); 
             };
 
             setTimeout(updateLayout, 150);
@@ -1402,7 +1437,7 @@
             });
 
             galeria.addEventListener('scroll', () => {
-                if (!isDesktop || setWidth === 0) return; // Solo aplicamos el loop infinito en PC
+                if (setWidth === 0) return;
                 if (galeria.scrollLeft < setWidth * 0.1) {
                     galeria.style.scrollBehavior = 'auto';
                     galeria.scrollLeft += setWidth;
@@ -1415,7 +1450,6 @@
 
             const startAutoScroll = () => {
                 clearInterval(autoScrollInterval); 
-                if (!isDesktop) return; // Móvil no usa auto-scroll
                 autoScrollInterval = setInterval(() => {
                     if (isDown) return; 
                     galeria.scrollBy({ left: 200, behavior: 'smooth' });
@@ -1454,24 +1488,10 @@
                 galeria.scrollLeft = scrollLeft - walk; 
             };
 
-            galeria.addEventListener('mousedown', (e) => {
-                e.preventDefault(); 
-                startDrag(e.pageX);
-            });
+            galeria.addEventListener('mousedown', (e) => { e.preventDefault(); startDrag(e.pageX); });
             galeria.addEventListener('mousemove', (e) => onDrag(e.pageX));
             galeria.addEventListener('mouseleave', () => galeria.endDrag());
-
-            galeria.addEventListener('touchstart', (e) => {
-                if (isDesktop) startDrag(e.touches[0].pageX);
-            }, {passive: true});
-            
-            galeria.addEventListener('touchend', () => {
-                if (isDesktop) galeria.endDrag();
-            });
-            
-            galeria.addEventListener('touchmove', (e) => {
-                if (isDesktop) onDrag(e.touches[0].pageX);
-            }, {passive: true});
+            window.addEventListener('mouseup', () => { if(activeGallery === galeria) galeria.endDrag(); });
 
             galeria.addEventListener('click', (e) => {
                 if (isDraggingFlag) {
@@ -1479,9 +1499,7 @@
                     return;
                 }
                 const item = e.target.closest('.item-scroll');
-                if (item) {
-                    openLightbox(galeria, item);
-                }
+                if (item) openLightbox(galeria, item);
             });
         });
 
