@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYS.DANIEL.LUGO // CLOC</title>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYS.DANIEL.LUGO // CLOC</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;800;900&family=Share+Tech+Mono&family=Syncopate:wght@700&family=Teko:wght@700&family=Libre+Barcode+39+Extended+Text&display=swap" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://player.vimeo.com">
+    <link rel="preconnect" href="https://i.vimeocdn.com">
+    <link rel="preconnect" href="https://f.vimeocdn.com">
+    
+    <style>
+        :root {
+            --fondo: #020202; 
+            --texto: #f0f0f0;
+            --acento: #cc00cc; 
+            --ui-dim: rgba(204, 0, 204, 0.4);
+            --hud-text: #888;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+
+        body {
+            background-color: var(--fondo);
+            color: var(--texto);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            overflow-anchor: none; /* <-- ESTE COMANDO EVITA EL REBOTE HACIA ARRIBA */
+        }
+
+        /* --- DETALLES DE FONDO --- */
+        .ambient-glow { position: fixed; border-radius: 50%; filter: blur(150px); opacity: 0.15; z-index: -3; pointer-events: none; }
+        .glow-1 { top: -20%; right: -10%; width: 60vw; height: 60vw; background: var(--acento); }
+        .glow-2 { bottom: -20%; left: -10%; width: 50vw; height: 50vw; background: var(--acento); }
+
+        .bg-dots {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: radial-gradient(rgba(204,0,204,0.15) 1px, transparent 1px);
+            background-size: 35px 35px; z-index: -2; pointer-events: none;
+        }
+
+        .decoracion-vertical {
+            position: fixed; top: 0; width: 1px; height: 100vh;
+            background: linear-gradient(to bottom, transparent, var(--ui-dim), rgba(204,0,204,0.8), var(--ui-dim), transparent);
+            z-index: 900; pointer-events: none; opacity: 0.3;
+        }
+        .decoracion-vertical.izq { left: 40px; }
+        .decoracion-vertical.der { right: 40px; }
+
+        .cross-mark {
+            position: fixed; color: rgba(204,0,204,0.6); font-family: 'Share Tech Mono', monospace; font-size: 12px; z-index: -1; pointer-events: none;
+        }
+        .cross-1 { top: 15%; right: 15%; }
+        .cross-2 { bottom: 25%; left: 8%; }
+        .cross-3 { top: 40%; left: 5%; }
+        .cross-4 { top: 70%; right: 8%; }
+
+        /* AJUSTE DEL FILTRO CRT: Bajado a capa 800 para no afectar fotos ni interfaz */
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; z-index: 800; pointer-events: none; opacity: 0.35;
+            will-change: transform; /* NUEVO: Prepara al navegador para optimizar */
+            transform: translateZ(0); /* NUEVO: Fuerza a usar la tarjeta gráfica separando la capa */
+        }
+
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
+            z-index: 799; pointer-events: none;
+            will-change: transform; /* NUEVO */
+            transform: translateZ(0); /* NUEVO */
+        }
+
+        /* HUD ELEMENTS Y BOTÓN DE IDIOMA */
+        .lang-toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10005;
+            background: rgba(204, 0, 204, 0.15);
+            border: 1px solid var(--acento);
+            color: var(--texto);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(204, 0, 204, 0.2);
+            backdrop-filter: blur(5px);
+            letter-spacing: 1px;
+        }
+        .lang-toggle-btn:hover {
+            background: var(--acento);
+            color: #000;
+            box-shadow: 0 0 20px var(--acento);
+            transform: scale(1.05);
+        }
+
+        .hud-element {
+            position: fixed; font-family: 'Share Tech Mono', monospace; color: var(--acento); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; z-index: 1000; pointer-events: none;
+        }
+        .hud-top-left { top: 75px; left: 20px; border-left: 2px solid var(--acento); padding-left: 10px; }
+        .hud-bottom-right { bottom: 20px; right: 20px; text-align: right; }
+        .hud-bottom-left { bottom: 20px; left: 20px; }
+        .barcode-text { font-family: 'Libre Barcode 39 Extended Text', cursive; font-size: 2.5rem; color: var(--acento); opacity: 0.5; display: block; margin-top: 10px; }
+
+        /* HEADER Y NAV */
+        header { position: fixed; top: 40px; left: 0; width: 100%; height: 50px; padding: 0 40px; display: flex; justify-content: flex-end; align-items: center; z-index: 10010; pointer-events: none; }
+        header * { pointer-events: auto; }
+        .logo-container { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10011; transition: transform 0.3s ease, opacity 0.4s ease-out; }
+        .logo-img { height: 42px; width: auto; filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5)); }
+        nav { display: flex; gap: 15px; }
+        nav a { font-family: 'Share Tech Mono', monospace; color: var(--texto); text-decoration: none; font-size: 0.9rem; border: 1px solid var(--ui-dim); padding: 5px 15px; text-transform: uppercase; transition: all 0.3s ease; background: rgba(0,0,0,0.5); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+        nav a:hover { background: var(--acento); color: #000; box-shadow: 0 0 15px var(--acento); }
+
+        /* HERO SECTION */
+        .hero { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .placeholder-3d { position: absolute; width: 40vw; height: 40vw; max-width: 500px; max-height: 500px; border: 1px dashed var(--ui-dim); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: 'Share Tech Mono', monospace; color: var(--ui-dim); z-index: 1; transition: transform 0.1s ease-out; box-shadow: inset 0 0 50px rgba(204, 0, 204, 0.1); }
+        .placeholder-3d::before { content: "[ 3D ASSET PLACEHOLDER ]"; animation: blink 2s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .cta-container { z-index: 2; text-align: center; pointer-events: auto; width: 100%; }
+        .cta-gigante { text-decoration: none; display: inline-block; color: var(--texto); width: 100%; }
+        /* 1. Interlineado apretado para el texto INICIAL (MAKE IT HAPPEN) */
+        .nombre-colosal { 
+            font-size: 14.5vw; 
+            font-weight: 700; 
+            line-height: 0.71; /* <-- Valor pegadito para el texto corto */
+            letter-spacing: -0.04em; 
+            text-transform: uppercase; 
+            text-shadow: 0 5px 20px rgba(0,0,0,0.8); 
+            text-align: center; 
+            white-space: nowrap; 
+            transition: line-height 0.5s ease; /* Hace que el cambio de altura se vea fluido */
+        }
+
+        /* 2. Interlineado más suelto para el texto HOVER (LET'S BUILD TOGETHER) */
+        .cta-gigante:hover .nombre-colosal, 
+        .cta-gigante.activado .nombre-colosal {
+            line-height: 0.8; /* <-- Vuelve al valor normal para que el segundo texto encaje bien */
+        }
+        .cypher-text { font-family: 'Syncopate', sans-serif; display: inline-block; }
+        .cypher-text.decrypted { font-family: 'Montserrat', sans-serif; }
+        .palabra-glow { display: inline-block; }
+        .cta-gigante:hover .palabra-glow, .cta-gigante.activado .palabra-glow { animation: encendido-suave 0.8s ease-out forwards; }
+        @keyframes encendido-suave { 0% { color: var(--texto); text-shadow: none; } 100% { color: var(--acento); text-shadow: 0 0 10px rgba(204,0,204,0.8), 0 0 30px rgba(204,0,204,0.6), 0 0 60px rgba(204,0,204,0.4); } }
+        /* --- SUBTÍTULO DINÁMICO HERO --- */
+        .subtitulo-dinamico {
+            position: relative;
+            height: 30px; /* Mantiene el espacio fijo para que no salte la pantalla */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .sub-estado-1, .sub-estado-2 {
+            position: absolute;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            width: 100%;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            pointer-events: none; /* Evita que estorben el clic del botón de arriba */
+        }
+
+        /* Estado 1 (Inicial) */
+        .sub-estado-1 {
+            color: var(--hud-text);
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Estado 2 (Oculto por defecto) */
+        .sub-estado-2 {
+            color: var(--acento); /* Color rosado para llamar la atención */
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        /* Cuando el botón de arriba se activa o se le pasa el mouse: Ocultamos el Estado 1 */
+        .cta-gigante:hover + .subtitulo-dinamico .sub-estado-1,
+        .cta-gigante.activado + .subtitulo-dinamico .sub-estado-1 {
+            opacity: 0;
+            transform: translateY(-15px);
+        }
+
+        /* Cuando el botón de arriba se activa: Mostramos el Estado 2 con animación */
+        .cta-gigante:hover + .subtitulo-dinamico .sub-estado-2,
+        .cta-gigante.activado + .subtitulo-dinamico .sub-estado-2 {
+            opacity: 1;
+            transform: translateY(0);
+            animation: rebote-llamativo 1.2s infinite;
+        }
+
+        /* Animación que hace flotar el texto sutilmente hacia arriba */
+        @keyframes rebote-llamativo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); text-shadow: 0 0 10px var(--acento); }
+        }
+
+        /* ABOUT SECTION */
+        .about-flex { display: flex; align-items: center; justify-content: space-between; gap: 80px; width: 100%; max-width: 1500px; margin: 0 auto; perspective: 1000px; }
+        .about-text-content { flex: 1.2; text-align: left; position: relative; }
+        .about-text-content::before { content: ''; position: absolute; left: -20px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--acento), transparent); opacity: 0.5; }
+        .titulo-seccion-about { font-size: 1.5vw; font-weight: 900; text-transform: uppercase; color: var(--acento); margin-bottom: 20px; letter-spacing: 2px; display: block; }
+        .texto-alto-contraste h3 { 
+    font-size: 4vw; 
+    font-weight: 900; 
+    line-height: 1.1; 
+    text-transform: uppercase; 
+    color: var(--hud-text); 
+    margin-bottom: 30px; 
+    letter-spacing: -0.02em; 
+    text-wrap: balance; /* <-- BALANCEA EL TÍTULO COLOSAL */
+}
+        .texto-alto-contraste h3 span.blanco { color: #ffffff; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .texto-alto-contraste h3 span.morado { color: var(--acento); text-shadow: 0 0 30px rgba(204,0,204,0.5); }
+        .texto-alto-contraste p { 
+    font-family: 'Share Tech Mono', monospace; 
+    font-size: 1.1rem; 
+    color: #b0b0b0; 
+    line-height: 1.6; 
+    margin-bottom: 20px; 
+    text-wrap: pretty; /* <-- ELIMINA LAS VIUDAS AUTOMÁTICAMENTE */
+}
+        .texto-alto-contraste p.destacado { color: var(--texto); font-weight: 700; }
+        .resplandor-blanco { color: var(--texto); text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .about-visual-content { flex: 1; max-width: 540px; width: 100%; padding: 20px; }
+        
+        .placeholder-avanzado { width: 100%; aspect-ratio: 4/5; background: rgba(5, 5, 5, 0.9); border: 2px solid var(--ui-dim); position: relative; display: flex; justify-content: center; align-items: center; clip-path: polygon(40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%, 0 40px); box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden; transform-style: preserve-3d; will-change: transform; transition: transform 0.1s ease-out, border-color 0.4s ease, box-shadow 0.4s ease; pointer-events: auto; z-index: 850; }
+        .placeholder-avanzado.reset-animacion { transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.4s ease, box-shadow 0.4s ease; }
+        .placeholder-avanzado:hover { border-color: var(--acento); box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 50px rgba(204, 0, 204, 0.3); }
+        .foto-daniel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; z-index: 2; pointer-events: none; }
+        .cyber-grid { position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; background-image: linear-gradient(rgba(204,0,204,0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(204,0,204,0.2) 2px, transparent 2px); background-size: 30px 30px; z-index: 1; pointer-events: none; transform: translateZ(-30px); }
+        .scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #fff; box-shadow: 0 0 10px #fff, 0 0 20px var(--acento), 0 0 40px var(--acento); animation: scanline 8s cubic-bezier(0.4, 0, 0.2, 1) infinite; opacity: 0.8; z-index: 5; pointer-events: none; }
+        
+        /* SECCIONES COMPARTIDAS */
+        .seccion { padding: 100px 10vw; position: relative; scroll-margin-top: 100px; }
+        .inner-container { max-width: 1500px; margin: 0 auto; width: 100%; }
+        .wrapper-alineacion { max-width: calc(1500px + 20vw); margin: 0 auto; padding-left: 10vw; padding-right: 10vw; width: 100%; box-sizing: border-box; }
+
+        /* --- SISTEMA DE PROYECTOS --- */
+        .encabezado-servicios {
+            display: flex; justify-content: space-between; border-bottom: 2px solid var(--ui-dim);
+            padding-bottom: 10px; margin-bottom: 20px; font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--hud-text); text-transform: uppercase;
+        }
+
+        .lista-acordeon { width: 100%; border-top: 1px solid var(--ui-dim); }
+        .item-acordeon { border-bottom: 1px solid var(--ui-dim); }
+
+        .btn-acordeon {
+            width: 100%; display: flex; align-items: center; padding: 40px 0;
+            background: transparent; border: none; outline: none; cursor: pointer;
+            color: var(--texto); font-family: 'Montserrat', sans-serif; font-size: 3vw; 
+            font-weight: 700; text-transform: uppercase; transition: color 0.3s;
+            text-align: left; justify-content: flex-start; 
+            white-space: nowrap; 
+        }
+        .btn-acordeon:hover { color: var(--acento); }
+        .icono-acordeon { font-family: 'Share Tech Mono', monospace; font-size: 3vw; margin-right: 40px; color: var(--hud-text); transition: transform 0.3s, color 0.3s; display: inline-block; }
+        .btn-acordeon.activo .icono-acordeon { color: var(--acento); transform: rotate(45deg); }
+        
+        /* OPTIMIZACIÓN DE RENDIMIENTO EN EL ACORDEÓN */
+        .contenido-acordeon { 
+            max-height: 0; overflow: hidden; 
+            transition: max-height 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+            will-change: max-height; 
+        }
+        
+        /* --- ESTILOS DEL TEXTO Y TYPEWRITER --- */
+        .info-proyectos-container {
+            display: flex; flex-direction: column; 
+            margin-bottom: 45px; 
+        }
+        .info-categoria { 
+            font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; 
+            color: var(--hud-text); margin-bottom: 35px !important; 
+            display: block;
+        }
+        .info-categoria span { color: var(--acento); }
+        
+        .proyecto-destacado {
+            display: flex;
+            align-items: center; 
+            justify-content: space-between;
+            gap: 40px;
+            width: 100%;
+        }
+        .proyecto-destacado h4 {
+    font-family: 'Share Tech Mono', monospace; 
+    color: var(--texto);
+    font-size: 2.4rem; 
+    margin-bottom: 0; 
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+    flex: 0 0 35%; 
+    text-wrap: balance; /* <-- BALANCEA LAS LÍNEAS DEL TÍTULO */
+}
+        .proyecto-destacado p {
+            font-family: 'Montserrat', sans-serif; color: #b0b0b0;
+            font-size: 0.95rem; line-height: 1.6; margin-bottom: 0;
+            flex: 1; 
+            text-wrap: pretty; 
+        }
+        
+        /* Cursor Parpadeante Cyberpunk */
+        .type-target::after {
+            content: '█'; opacity: 1; animation: blink-cursor 1s infinite step-end;
+            display: inline-block; margin-left: 5px; color: var(--acento);
+        }
+        .type-target.typing-done::after { display: none; }
+        @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* --- CONTENEDOR DEL SCROLL --- */
+        .galeria-horizontal {
+            display: flex; gap: 20px;
+            padding-bottom: 40px; width: 100vw; 
+            margin-left: calc(-50vw + 50%); 
+            overflow-x: auto; cursor: grab; scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; 
+            position: relative; z-index: 850; /* AÑADIDO: Eleva las galerías para que escapen del filtro CRT */
+        }
+        .galeria-horizontal:active { cursor: grabbing; }
+        .galeria-horizontal::-webkit-scrollbar { display: none; }
+        .galeria-horizontal { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- ZOOM GLOBAL DEL ITEM Y COLOR REAL DE LA IMAGEN --- */
+        .item-scroll {
+            flex: 0 0 auto; height: 380px; 
+            position: relative; background: #0a0a0a; border: 1px solid var(--ui-dim); overflow: hidden; 
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+            z-index: 850;
+        }
+        
+        .item-scroll:hover {
+            transform: scale(1.03);
+            z-index: 851;
+            box-shadow: 0 15px 40px rgba(204, 0, 204, 0.2);
+            border-color: var(--acento);
+        }
+
+        .ar-cuadrado { aspect-ratio: 1 / 1; }      
+        .ar-retrato { aspect-ratio: 4 / 5; }   
+        .ar-panoramico { aspect-ratio: 16 / 9; }
+
+        .item-scroll img {
+            width: 100%; height: 100%; object-fit: cover; 
+            user-select: none; -webkit-user-drag: none; pointer-events: none; 
+        }
+
+        /* --- ESTILOS DE VIDEO Y REPRODUCTOR --- */
+        .iframe-bg {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; 
+            border: none;
+        }
+        
+        .play-overlay {
+            display: none; 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 70px; height: 70px; background: rgba(2, 2, 2, 0.7);
+            border: 2px solid var(--acento); border-radius: 50%;
+            justify-content: center; align-items: center;
+            z-index: 5; box-shadow: 0 0 15px rgba(204, 0, 204, 0.3); 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s, background 0.3s;
+            pointer-events: none; 
+        }
+        .item-scroll:hover .play-overlay { 
+            transform: translate(-50%, -50%) scale(1.15); 
+            background: rgba(204, 0, 204, 0.2);
+            box-shadow: 0 0 30px rgba(204, 0, 204, 0.8), inset 0 0 15px rgba(204, 0, 204, 0.5);
+        }
+        .play-triangle { 
+            width: 0; height: 0; 
+            border-top: 12px solid transparent; border-bottom: 12px solid transparent; 
+            border-left: 20px solid var(--acento); margin-left: 6px; 
+            filter: drop-shadow(0 0 5px var(--acento));
+        }
+
+        /* --- LIGHTBOX --- */
+        .lightbox {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(2, 2, 2, 0.95); z-index: 999999;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .lightbox.active { opacity: 1; pointer-events: auto; }
+        .lightbox-img {
+            max-width: 90vw; max-height: 85vh; border: 1px solid var(--ui-dim);
+            box-shadow: 0 0 50px rgba(204, 0, 204, 0.15); 
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            user-select: none;
+        }
+        
+        .lightbox-iframe {
+            max-width: 90vw; width: 1200px; max-height: 85vh; aspect-ratio: 16/9;
+            border: 1px solid var(--ui-dim); background: #000;
+            box-shadow: 0 0 50px rgba(204, 0, 204, 0.15); 
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            display: none; 
+        }
+
+        .lightbox-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            font-size: 2.5rem; color: var(--hud-text); cursor: pointer;
+            user-select: none; transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace; padding: 20px;
+        }
+        .lightbox-btn:hover { color: var(--acento); text-shadow: 0 0 15px var(--acento); transform: translateY(-50%) scale(1.2); }
+        .lightbox-prev { left: 2vw; }
+        .lightbox-next { right: 2vw; }
+        .lightbox-close {
+            position: absolute; top: 30px; right: 40px;
+            font-size: 3rem; color: var(--hud-text); cursor: pointer;
+            user-select: none; transition: all 0.2s;
+            font-family: 'Montserrat', sans-serif; font-weight: 300; line-height: 1;
+        }
+        .lightbox-close:hover { color: var(--acento); transform: scale(1.2) rotate(90deg); }
+
+        /* REVEAL ANIMATION */
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: none; } /* CAMBIADO PARA LIBERAR CAPAS: 'none' elimina la trampa de opacidad y z-index */
+        .delay-1 { transition-delay: 0.1s; }
+/* --- NUEVA SECCIÓN DE CONTACTO --- */
+        .contacto-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end; /* Alinea los elementos abajo para que el logo quede a la altura de los botones */
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .botones-contacto {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-solido {
+            background-color: var(--acento);
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+            box-shadow: 0 0 10px rgba(204, 0, 204, 0.2);
+        }
+
+        .btn-correo {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 15px 30px;
+            letter-spacing: 1px;
+        }
+
+        .btn-linkedin {
+            width: 56px;
+            height: 56px;
+        }
+
+        .btn-solido:hover {
+            background-color: #e600e6; /* Un fucsia más claro para el hover */
+            color: #ffffff;
+            box-shadow: 0 0 25px rgba(204, 0, 204, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .logo-contacto {
+            height: 50px; /* Ajusta este tamaño según tu imagen real */
+            width: auto;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+            transition: filter 0.3s;
+        }
+        
+        .logo-contacto:hover {
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
+        }
+        /* RESPONSIVO MÓVIL */
+        @media (max-width: 768px) {
+/* RESPONSIVO MÓVIL */
+        @media (max-width: 768px) {
+            
+            /* --- B. ZONAS TÁCTILES (Fat Finger Rule) --- */
+            /* Botón más grande y fácil de presionar con el pulgar */
+            .lang-toggle-btn { top: 15px; left: 15px; font-size: 0.8rem; padding: 12px 18px; }
+            .hud-top-left { top: 75px; } /* Lo bajamos un poco para que no choque con el botón */
+
+            .nombre-colosal { font-size: 15vw; white-space: nowrap; }
+            header { justify-content: center; top: 20px; }
+            
+            /* --- A. NAVEGACIÓN MÓVIL (Sticky Bottom Bar) --- */
+            /* En lugar de ocultar el menú, lo convertimos en una barra inferior estilo app */
+            nav { 
+                display: flex; 
+                position: fixed; 
+                bottom: 0; 
+                left: 0; 
+                width: 100%; 
+                background: rgba(2, 2, 2, 0.95); 
+                backdrop-filter: blur(10px); 
+                border-top: 1px solid var(--acento); 
+                padding: 15px 0; 
+                justify-content: space-evenly; 
+                z-index: 10010; 
+                /* Hack moderno para iPhones sin botón (Notch/Dynamic Island) */
+                padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
+            }
+            
+            nav a { 
+                font-size: 0.75rem; 
+                padding: 5px 10px; 
+                background: transparent; 
+                border: none; 
+                clip-path: none; 
+                text-align: center;
+            }
+            
+            nav a:hover { 
+                background: transparent; 
+                color: var(--acento); 
+                box-shadow: none; 
+            }
+
+            .decoracion-vertical, .cross-mark { display: none; }
+            
+            /* --- C. AVISO DE ROTACIÓN PARA EL LIGHTBOX --- */
+            /* Inyectamos un texto sutil solo cuando el lightbox está activo en móviles */
+            .lightbox.active::after {
+                content: "[ GIRA EL DISPOSITIVO / ROTATE DEVICE ]";
+                position: absolute;
+                bottom: 100px;
+                color: rgba(255, 255, 255, 0.6);
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 0.7rem;
+                letter-spacing: 1px;
+                pointer-events: none;
+                animation: blink 2s infinite;
+                z-index: 9999999;
+            }
+
+            /* Subimos el botón de "volver arriba" para que no quede tapado por el nuevo menú inferior */
+            .btn-arriba { bottom: 90px; right: 20px; width: 45px; height: 45px; }
+
+            /* ... (A partir de aquí mantienes el resto de tu código @media intacto, como el about-flex, etc.) ... */
+            .about-flex { flex-direction: column-reverse; gap: 50px; perspective: none; }
+            .about-text-content { text-align: left; }
+            .about-text-content::before { left: -10px; }
+            .titulo-seccion-about { font-size: 6vw; }
+            .texto-alto-contraste h3 { font-size: 7.5vw; }
+            .texto-alto-contraste p { font-size: 1rem; }
+            .about-visual-content { padding: 0; }
+            .placeholder-avanzado { aspect-ratio: 1/1; max-width: 100%; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); transform: none !important; }
+            .contacto-flex { flex-direction: column; align-items: flex-start; gap: 30px; }
+            .btn-correo { font-size: 0.9rem; padding: 12px 20px; }
+            .btn-linkedin { width: 45px; height: 45px; }
+            .logo-contacto { height: 40px; }
+            .btn-acordeon { font-size: 4.5vw; padding: 25px 0; white-space: nowrap; } 
+            .icono-acordeon { font-size: 6vw; margin-right: 10px; }
+            
+            .proyecto-destacado { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .proyecto-destacado h4 { font-size: 1.8rem; }
+            .proyecto-destacado p { font-size: 0.85rem; max-width: 100%; }
+            .info-categoria { margin-bottom: 20px !important; }
+            
+            .galeria-horizontal { gap: 15px; } 
+            .item-scroll { height: 260px; } 
+            .encabezado-servicios { font-size: 0.6rem; }
+            .lightbox-img, .lightbox-iframe { max-width: 95vw; max-height: 70vh; }
+            .lightbox-btn { font-size: 2rem; padding: 10px; }
+            .lightbox-prev { left: 0; }
+            .lightbox-next { right: 0; }
+            .play-overlay { width: 50px; height: 50px; }
+            .play-triangle { border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 14px solid var(--acento); }
+        }
+.btn-arriba {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            background: rgba(204, 0, 204, 0.2);
+            border: 1px solid var(--acento);
+            color: var(--texto);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        .btn-arriba.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .btn-arriba:hover {
+            background: var(--acento);
+            box-shadow: 0 0 20px var(--acento);
+        }
+    </style>
+</head>
+<body>
+
+    <button id="lang-toggle" class="lang-toggle-btn">EN / ES</button>
+
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="bg-dots"></div>
+    <div class="decoracion-vertical izq"></div>
+    <div class="decoracion-vertical der"></div>
+    <div class="cross-mark cross-1">+</div>
+    <div class="cross-mark cross-2">+</div>
+    <div class="cross-mark cross-3">+</div>
+    <div class="cross-mark cross-4">+</div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div class="hud-element hud-top-left">SYS.INIT_ // OK<br>USR // D.LUGO<br>LOC // GNS_VZLA</div>
+    <div class="hud-element hud-bottom-left">> 10.4685 N<br>> 66.6111 W<span class="barcode-text">D.LUGO-2026</span></div>
+    <div class="hud-element hud-bottom-right" id="reloj-hud">--:--:--</div>
+
+    <header>
+        <a href="#" class="logo-container" id="main-logo"><img src="logo.png" alt="CLOC" class="logo-img"></a>
+       <nav>
+            <a href="#trabajo" class="trans" data-es="MIS PROYECTOS" data-en="MY PROJECTS">MIS PROYECTOS</a>
+            <a href="#about" class="trans" data-es="SOBRE MI" data-en="ABOUT ME">INFO</a>
+            <a href="#contacto" class="trans" data-es="CONTACTO" data-en="CONTACT">COMMS</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="placeholder-3d" id="esfera-3d"></div>
+        <div class="cta-container">
+            <!-- Cambiamos href="#contacto" por href="#trabajo" -->
+            <a href="#trabajo" class="cta-gigante" id="cta-decrypter">
+                <div class="nombre-colosal"><span class="cypher-text" data-initial-es="HAZLO" data-initial-en="MAKE IT" data-target="LET'S BUILD" data-target-es="CREEMOS" data-target-en="LET'S BUILD">MAKE IT</span></div>
+                <div class="nombre-colosal"><span class="palabra-glow cypher-text" data-initial-es="POSIBLE" data-initial-en="HAPPEN" data-target="TOGETHER" data-target-es="JUNTOS" data-target-en="TOGETHER">HAPPEN</span></div>
+            </a>
+            
+            <!-- Nuevo subtítulo con dos estados -->
+            <div class="subtitulo-dinamico">
+                <span class="sub-estado-1 trans" data-es="> NO TE ARREPENTIRÁS_" data-en="> YOU WON'T REGRET IT_">> NO TE ARREPENTIRÁS_</span>
+                <span class="sub-estado-2 trans" data-es="↑ HAZ CLIC ARRIBA PARA VER MIS PROYECTOS ↑" data-en="↑ CLICK ABOVE TO SEE MY PROJECTS ↑">↑ HAZ CLIC ARRIBA PARA VER MIS PROYECTOS ↑</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="seccion">
+        <div class="about-flex">
+            <div class="about-text-content reveal delay-1">
+                <span class="titulo-seccion-about trans" data-es="SOBRE MÍ" data-en="ABOUT ME">SOBRE MÍ</span>
+                <div class="texto-alto-contraste">
+                    <h3 class="trans" data-es='<span class="blanco">SOY</span> <span class="morado">DANIEL LUGO,</span> <br><span class="blanco">EL DISEÑADOR DETRÁS DE</span> <br><span class="morado">CLOC.</span>' data-en='<span class="blanco">I AM</span> <span class="morado">DANIEL LUGO,</span> <br><span class="blanco">THE DESIGNER BEHIND</span> <br><span class="morado">CLOC.</span>'>
+                        <span class="blanco">SOY</span> <span class="morado">DANIEL LUGO,</span> <br><span class="blanco">EL DISEÑADOR DETRÁS DE</span> <br><span class="morado">CLOC.</span>
+                    </h3>
+                    <p class="destacado trans" data-es="O mejor dicho, soy la única persona detrás de CLOC..." data-en="Or rather, I am the only person behind CLOC...">O mejor dicho, soy la única persona detrás de CLOC...</p>
+                    <p class="trans" data-es="Soy un diseñador gráfico venezolano con más de 5 años de experiencia. Me especializo en branding, fotomanipulación y diseño estratégico para redes sociales, colaborando principalmente con empresas del ecosistema Web3, criptomonedas y blockchain." data-en="I am a Venezuelan graphic designer with over 5 years of experience. I specialize in branding, photomanipulation, and strategic design for social media, collaborating mainly with companies in the Web3, cryptocurrency, and blockchain ecosystem.">Soy un diseñador gráfico venezolano con más de 5 años de experiencia. Me especializo en branding, fotomanipulación y diseño estratégico para redes sociales, colaborando principalmente con empresas del ecosistema Web3, criptomonedas y blockchain.</p>
+                    <p class="trans" data-es='Mi enfoque es transformar conceptos técnicos o complejos en ecosistemas visuales funcionales y de alto impacto. <span class="resplandor-blanco">No solo diseño para que se vea bien; priorizo la estrategia detrás del diseño para garantizar los resultados que necesitas.</span>' data-en='My focus is transforming technical or complex concepts into functional and high-impact visual ecosystems. <span class="resplandor-blanco">I do not just design to make it look good; I prioritize the strategy behind the design to guarantee the results you need.</span>'>Mi enfoque es transformar conceptos técnicos o complejos en ecosistemas visuales funcionales, minimalistas y de alto impacto. <span class="resplandor-blanco">No solo diseño para que se vea bien; priorizo la estrategia detrás del diseño para garantizar los resultados que necesitas.</span></p>
+                </div>
+            </div>
+            <div class="about-visual-content reveal delay-2">
+                <div class="placeholder-avanzado" id="tarjeta-foto">
+                    <img src="foto-daniel.png" alt="Daniel Lugo" class="foto-daniel">
+                    <div class="cyber-grid"></div>
+                    <div class="scanner-line"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="trabajo" class="seccion" style="padding-left: 0; padding-right: 0;">
+        <div class="wrapper-alineacion">
+            <span class="titulo-seccion-about reveal trans" data-es="MIS PROYECTOS" data-en="MY PROJECTS" style="margin-bottom: 30px;">MIS PROYECTOS</span>
+            <div class="encabezado-servicios reveal">
+                <span class="trans" data-es="MÓDULOS_SISTEMA [03]" data-en="SYSTEM_MODULES [03]">MÓDULOS_SISTEMA [03]</span>
+                <span class="trans" data-es="ENTRADAS_DATOS [40]" data-en="DATA_ENTRIES [40]">ENTRADAS_DATOS [40]</span> 
+            </div>
+        </div>
+
+        <div class="lista-acordeon reveal delay-1">
+            
+            <div class="item-acordeon">
+                <div class="wrapper-alineacion">
+                    <button class="btn-acordeon">
+                        <span class="icono-acordeon">+</span> <span class="trans" data-es="Diseño para Redes Sociales" data-en="Social Media Design">Diseño para Redes Sociales</span>
+                    </button>
+                </div>
+                <div class="contenido-acordeon">
+                    
+                    <div class="wrapper-alineacion info-proyectos-container">
+                        <p class="info-categoria type-target" data-delay="0" data-text="Estrategia y diseño visual para ecosistemas sociales. // DIFUSIÓN_SOCIAL" data-es="Estrategia y diseño visual para ecosistemas sociales. // DIFUSIÓN_SOCIAL" data-en="Visual strategy and design for social ecosystems. // SOCIAL_BROADCAST">Estrategia y diseño visual para ecosistemas sociales. <span>// DIFUSIÓN_SOCIAL</span></p>
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> SYFU" data-es="> SYFU" data-en="> SYFU">> SYFU</h4>
+                            <p class="type-target" data-delay="1100" data-text="My goal with SyFu was to translate all their crypto innovation into a social media environment their community actually wants to engage with. We built a highly modern and agile visual direction, where every post feels like a window into the brand's future." data-es="Mi objetivo con SyFu fue traducir toda su innovación cripto en un entorno gráfico para redes que su comunidad realmente quisiera consumir. Creamos una dirección visual muy moderna y ágil, donde cada post funciona como una ventana al futuro de la marca." data-en="My goal with SyFu was to translate all their crypto innovation into a social media environment their community actually wants to engage with. We built a highly modern and agile visual direction, where every post feels like a window into the brand's future.">My goal with SyFu was to translate all their crypto innovation into a social media environment their community actually wants to engage with. We built a highly modern and agile visual direction, where every post feels like a window into the brand's future.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic1April.avif" alt="SyFu 1" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic2April.avif" alt="SyFu 2" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic4April.avif" alt="SyFu 3" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic12April.avif" alt="SyFu 4" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Article2April.avif" alt="SyFu 5" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic6April.avif" alt="SyFu 6" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Article1April.avif" alt="SyFu 7" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic11April.avif" alt="SyFu 8" decoding="async"></div>
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> YOUCOIN" data-es="> YOUCOIN" data-en="> YOUCOIN">> YOUCOIN</h4>
+                            <p class="type-target" data-delay="1100" data-text="When directing Youcoin's social media, I knew we needed to project true technological maturity. My approach was to evolve their identity into a deeply cyberpunk and robotic visual ecosystem. I wanted the audience to feel the weight and engineering of the Metaverse in every post." data-es="Al tomar la dirección de las redes de Youcoin, sentí que necesitábamos proyectar una verdadera madurez tecnológica. Mi enfoque fue evolucionar su identidad hacia un ecosistema visual profundamente ciberpunk y robótico. Quería que, al ver cada post, la audiencia sintiera el peso y la ingeniería del Metaverso." data-en="When directing Youcoin's social media, I knew we needed to project true technological maturity. My approach was to evolve their identity into a deeply cyberpunk and robotic visual ecosystem. I wanted the audience to feel the weight and engineering of the Metaverse in every post.">When directing Youcoin's social media, I knew we needed to project true technological maturity. My approach was to evolve their identity into a deeply cyberpunk and robotic visual ecosystem. I wanted the audience to feel the weight and engineering of the Metaverse in every post.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-cuadrado"><img src="img/Proyecto-YoucoinArtboard-1.avif" alt="Youcoin 1" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPortfolio1.avif" alt="Youcoin 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/Proyecto-YoucoinArtboard-2.avif" alt="Youcoin 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/Proyecto-YoucoinArtboard-6.avif" alt="Youcoin 6" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/Proyecto-YoucoinArtboard-3.avif" alt="Youcoin 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPortfolio2.avif" alt="Infographic 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/InfographicPortfolio4.avif" alt="Infographic 4" loading="lazy" decoding="async"></div>
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> TASHI NETWORK" data-es="> TASHI NETWORK" data-en="> TASHI NETWORK">> TASHI NETWORK</h4>
+                            <p class="type-target" data-delay="1100" data-text="When collaborating with Tashi Network, my goal was to bring structure and scalability to their social channels. I steered the art direction toward a cyber-industrial aesthetic, blending detailed schematics with a high-contrast color palette. This effectively translated their network's technical complexity into striking, cohesive social media content." data-es="Trabajando con el equipo de Tashi Network, mi objetivo fue estructurar y dar coherencia a su ecosistema en redes sociales. Aposté por una dirección de arte de estética ciber-industrial, fusionando esquemas detallados con un contraste cromático muy agresivo. Así logré que la complejidad técnica de su red se tradujera en piezas de contenido visualmente potentes y alineadas a su marca." data-en="When collaborating with Tashi Network, my goal was to bring structure and scalability to their social channels. I steered the art direction toward a cyber-industrial aesthetic, blending detailed schematics with a high-contrast color palette. This effectively translated their network's technical complexity into striking, cohesive social media content.">When collaborating with Tashi Network, my goal was to bring structure and scalability to their social channels. I steered the art direction toward a cyber-industrial aesthetic, blending detailed schematics with a high-contrast color palette. This effectively translated their network's technical complexity into striking, cohesive social media content.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic9April.avif" alt="Tashi 1" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/InfographicPort1.avif" alt="Tashi 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic5April.avif" alt="Tashi 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic19an.avif" alt="Tashi 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPort2 (1).avif" alt="Tashi 4" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic1.0April.avif" alt="Tashi 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic3April.avif" alt="Tashi 6" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/image_2026-01-30_18-32-56.avif" alt="Tashi 6" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic4.0April.avif" alt="Tashi 7" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic1.00April.avif" alt="Tashi 7" loading="lazy" decoding="async"></div>
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> ZARO COIN" data-es="> ZARO COIN" data-en="> ZARO COIN">> ZARO COIN</h4>
+                            <p class="type-target" data-delay="1100" data-text="Working with the Zaro Coin team, I optimized their visual ecosystem for social media. I structured a solid typographic architecture and a vibrant chromatic balance, giving their mascot greater presence, scalability, and cohesion across every post." data-es="Trabajando con el equipo de Zaro Coin, optimicé su universo gráfico para canales sociales. Estructuré una arquitectura tipográfica sólida y un balance cromático vibrante, logrando que su mascota ganara mayor presencia, escalabilidad y cohesión en cada pieza." data-en="Working with the Zaro Coin team, I optimized their visual ecosystem for social media. I structured a solid typographic architecture and a vibrant chromatic balance, giving their mascot greater presence, scalability, and cohesion across every post.">Working with the Zaro Coin team, I optimized their visual ecosystem for social media. I structured a solid typographic architecture and a vibrant chromatic balance, giving their mascot greater presence, scalability, and cohesion across every post.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic3Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/Untitled-4.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic12Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/Untitled-2.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Posted_Infographic11Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/image_2025-08-12_03-30-03.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic2Au (2).avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Infographic2Sep.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="item-acordeon">
+                <div class="wrapper-alineacion">
+                    <button class="btn-acordeon">
+                        <span class="icono-acordeon">+</span> <span class="trans" data-es="Marca e Identidad Visual" data-en="Brand & Visual Identity">Marca e Identidad Visual</span>
+                    </button>
+                </div>
+                <div class="contenido-acordeon">
+                    
+                    <div class="wrapper-alineacion info-proyectos-container">
+                        <p class="info-categoria type-target" data-delay="0" data-text="Arquitectura de marca, logotipos y sistemas visuales. // IDENTIDAD_CENTRAL" data-es="Arquitectura de marca, logotipos y sistemas visuales. // IDENTIDAD_CENTRAL" data-en="Brand architecture, logos, and visual systems. // CORE_IDENTITY">Arquitectura de marca, logotipos y sistemas visuales. <span>// IDENTIDAD_CENTRAL</span></p>
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> WORKFLOW717" data-es="> WORKFLOW717" data-en="> WORKFLOW717">> WORKFLOW717</h4>
+                            <p class="type-target" data-delay="1100" data-text="For WORKFLOW717, I faced a clear challenge: their tech was top-tier, but their visual identity was so cluttered it overshadowed their quality. My solution was to pivot to a clean, functional design that mirrors how naturally AI integrates into our daily lives. By stripping away all the visual noise, I finally allowed the brand to reflect its true essence: smart, agile, and seamless workflows." data-es="Con WORKFLOW717 me encontré con un reto muy claro: su tecnología era potente, pero su imagen estaba tan saturada que no dejaba ver la calidad de lo que hacían. Mi solución fue apostar por un diseño mucho más limpio y funcional, que refleja lo natural que es hoy integrar la IA en nuestro día a día. Al quitar todo el ruido visual, logré que la marca finalmente proyectara lo que es: un flujo de trabajo inteligente, ágil y sobre todo, fluido." data-en="For WORKFLOW717, I faced a clear challenge: their tech was top-tier, but their visual identity was so cluttered it overshadowed their quality. My solution was to pivot to a clean, functional design that mirrors how naturally AI integrates into our daily lives. By stripping away all the visual noise, I finally allowed the brand to reflect its true essence: smart, agile, and seamless workflows.">For WORKFLOW717, I faced a clear challenge: their tech was top-tier, but their visual identity was so cluttered it overshadowed their quality. My solution was to pivot to a clean, functional design that mirrors how naturally AI integrates into our daily lives. By stripping away all the visual noise, I finally allowed the brand to reflect its true essence: smart, agile, and seamless workflows.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico"><img src="img/3e6af7236285489.68e84f1074ccb.avif" alt="Placeholder" decoding="async"></div>
+
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126044153">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1126044153?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-cuadrado"><img src="img/Untitled-2 (2).avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/c254fc236285489.68e86466324ae.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/dba42c236285489.68e875406b5ad (1).avif" alt="Placeholder" decoding="async"></div>
+
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126066014">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1126066014?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src=""  frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126095799">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1126095799?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-panoramico"><img src="img/06c3e1236285489.68e8b5de7c101.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/Untitled-1.avif" alt="Placeholder" decoding="async"></div>
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> RAG 'N' MOP" data-es="> RAG 'N' MOP" data-en="> RAG 'N' MOP">> RAG 'N' MOP</h4>
+                            <p class="type-target" data-delay="1100" data-text="Rag 'N' Mop is a cleaning service based in Florida that breaks the visual mold of its industry. I transformed the freshness of a clean home into an identity strongly inspired by the 80s. Through the strategic use of color and typography, we achieved a functional and nostalgic system that projects spontaneity, without ever compromising the trust and professionalism the brand demands." data-es="Rag 'N' Mop es un servicio de limpieza en Florida que rompe el molde visual de su sector. Transformé la frescura de un hogar limpio en una identidad de fuerte inspiración ochentera. Mediante el uso estratégico del color y la tipografía, logramos un sistema funcional y nostálgico que proyecta espontaneidad, sin perder ni un segundo la confianza y el profesionalismo que la marca necesita." data-en="Rag 'N' Mop is a cleaning service based in Florida that breaks the visual mold of its industry. I transformed the freshness of a clean home into an identity strongly inspired by the 80s. Through the strategic use of color and typography, we achieved a functional and nostalgic system that projects spontaneity, without ever compromising the trust and professionalism the brand demands.">Rag 'N' Mop is a cleaning service based in Florida that breaks the visual mold of its industry. I transformed the freshness of a clean home into an identity strongly inspired by the 80s. Through the strategic use of color and typography, we achieved a functional and nostalgic system that projects spontaneity, without ever compromising the trust and professionalism the brand demands.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+<div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-8.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1182352140">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1182352140?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+                        <div class="item-scroll ar-panoramico"><img src="IMG/RagAndMopArtboard-1.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-2.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-3.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-6.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-7.avif" alt="Placeholder" decoding="async"></div>
+                       
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> NUMBURS" data-es="> NUMBURS" data-en="> NUMBURS">> NUMBURS</h4>
+                            <p class="type-target" data-delay="1100" data-text="Numburs had an incredible product for the P2P trading market, but their visual identity was falling behind. My role was to inject the character it lacked. I designed a radically different visual system, making the vibrant colors and shapes of their new logo the absolute centerpiece of their entire brand communication." data-es="Numburs tenía un producto increíble para el mercado de trading P2P, pero su identidad visual se quedaba atrás. Mi trabajo fue inyectarle el carácter que le faltaba. Diseñé un apartado visual radicalmente distinto, convirtiendo los colores vibrantes y las formas de su nuevo logo en los protagonistas absolutos de toda su comunicación de marca." data-en="Numburs had an incredible product for the P2P trading market, but their visual identity was falling behind. My role was to inject the character it lacked. I designed a radically different visual system, making the vibrant colors and shapes of their new logo the absolute centerpiece of their entire brand communication.">Numburs had an incredible product for the P2P trading market, but their visual identity was falling behind. My role was to inject the character it lacked. I designed a radically different visual system, making the vibrant colors and shapes of their new logo the absolute centerpiece of their entire brand communication.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                       
+                        
+<div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-8.avif" alt="Placeholder" decoding="async"></div>
+<div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1189979958">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1189979958?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+<div class="item-scroll ar-panoramico"><img src="IMG/NumbursArtboard-1.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-2.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-3.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-5.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-6.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-7.avif" alt="Placeholder" decoding="async"></div>
+                    </div>
+                    </div>
+            </div>
+
+            <div class="item-acordeon">
+                <div class="wrapper-alineacion">
+                    <button class="btn-acordeon">
+                        <span class="icono-acordeon">+</span> <span class="trans" data-es="Lab. Experimental" data-en="Experimental Lab">Lab. Experimental</span>
+                    </button>
+                </div>
+                <div class="contenido-acordeon">
+                    
+                    <div class="wrapper-alineacion info-proyectos-container">
+                        <p class="info-categoria type-target" data-delay="0" data-text="Exploraciones personales, fotomanipulación y arte conceptual. // PRUEBAS_I+D" data-es="Exploraciones personales, fotomanipulación y arte conceptual. // PRUEBAS_I+D" data-en="Personal explorations, photomanipulation, and conceptual art. // R&D_TESTING">Exploraciones personales, fotomanipulación y arte conceptual. <span>// PRUEBAS_I+D</span></p>
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> POSTERS" data-es="> POSTERS" data-en="> POSTERS">> POSTERS</h4>
+                            <p class="type-target" data-delay="1100" data-text="This is a curated collection of my favorite posters. I love creating them based on the emotions I feel when listening to songs and albums from my favorite artists. This is where I apply new techniques learned along the way, pushing my skills to the limit and letting my imagination run wild—it's my ultimate space for creative expression." data-es="Esta es una selección de mis pósters favoritos. Me encanta diseñarlos basándome en lo que siento al escuchar canciones y álbumes de mis artistas preferidos. Aquí aplico nuevas técnicas que aprendo en el camino y doy rienda suelta a mi imaginación para poner a prueba mis habilidades; es mi espacio ideal para experimentar y expresarme sin límites." data-en="This is a curated collection of my favorite posters. I love creating them based on the emotions I feel when listening to songs and albums from my favorite artists. This is where I apply new techniques learned along the way, pushing my skills to the limit and letting my imagination run wild—it's my ultimate space for creative expression.">This is a curated collection of my favorite posters. I love creating them based on the emotions I feel when listening to songs and albums from my favorite artists. This is where I apply new techniques learned along the way, pushing my skills to the limit and letting my imagination run wild—it's my ultimate space for creative expression.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-panoramico">
+                            <img src="img/C1.avif" alt="Lab 1" loading="lazy" decoding="async">
+                        </div>
+                        
+                        <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1195874507">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1195874507?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-panoramico">
+                            <img src="IMG/C2.avif" alt="Lab 2" loading="lazy" decoding="async">
+                        </div>
+                        
+                        <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1195882620">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1195882620?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-panoramico">
+                            <img src="img/C3.avif" alt="Lab 3" loading="lazy" decoding="async">
+                        </div>
+                        
+                        <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1196158379">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1196158379?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+
+                        <div class="item-scroll ar-panoramico">
+                            <img src="IMG/C4.avif" alt="Lab 4" loading="lazy" decoding="async">
+                        </div>
+                        
+                        <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1196161655">
+                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1196161655?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+                        </div>
+                    </div>
+<div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+    <div class="proyecto-destacado">
+        <h4 class="trans" data-delay="600" data-text="> COVER ART" data-es="> COVER ART" data-en="> COVER ART">> COVER ARTW</h4>
+        <p class="type-target" data-delay="1100" data-text="As a huge fan of Latin music, I have gathered some of my favorite cover arts in this collection. Each piece has been developed over the years with the single goal of visually capturing the exact energy, rhythm, and vibe of the songs they represent." data-es="Como gran apasionado de la música latina, he reunido en esta colección varios de mis artes de portada favoritos. Cada 'cover art' ha sido desarrollado a lo largo de estos años con el objetivo de transmitir de forma visual la energía, el ritmo y la vibra exacta de las canciones que representan." data-en="As a huge fan of Latin music, I have gathered some of my favorite cover arts in this collection. Each piece has been developed over the years with the single goal of visually capturing the exact energy, rhythm, and vibe of the songs they represent.">As a huge fan of Latin music, I have gathered some of my favorite cover arts in this collection. Each piece has been developed over the years with the single goal of visually capturing the exact energy, rhythm, and vibe of the songs they represent.</p>
+    </div>
+</div>
+
+<div class="galeria-horizontal">
+    <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1196217681">
+        <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1196217681?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+
+    <div class="item-scroll ar-cuadrado">
+        <img src="img/BB1 (1).avif" alt="Placeholder Img 1" loading="lazy" decoding="async">
+    </div>
+
+    <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1196228963">
+        <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1196228963?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+
+    <div class="item-scroll ar-cuadrado">
+        <img src="img/FEID1.avif" alt="Placeholder Img 2" loading="lazy" decoding="async">
+    </div>
+
+    <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1196234100">
+        <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1196234100?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+
+    <div class="item-scroll ar-cuadrado">
+        <img src="img/DRAKE1.avif" alt="Placeholder Img 3" loading="lazy" decoding="async">
+    </div>
+
+    <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo" data-video-id="1196247453">
+        <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1196247453?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
+    </div>
+
+    <div class="item-scroll ar-cuadrado">
+        <img src="img/KANYE1.avif" alt="Placeholder Img 4" loading="lazy" decoding="async">
+    </div>
+</div>
+<div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
+    <div class="proyecto-destacado">
+        <h4 class="type-target" data-delay="600" data-text="> T-SHIRTS" data-es="> CAMISETAS" data-en="> T-SHIRTS">> T-SHIRTS</h4>
+        <p class="type-target" data-delay="1100" data-text="Made it this far? :) I hope you like these t-shirts I developed around my own phrases, ideas, and thoughts. My goal was to give them a unique visual meaning, blending my personal reflections with my deep passion for fashion design and streetwear culture." data-es="¿Llegaste hasta aquí? :) Espero que te gusten estas camisetas que he desarrollado en torno a frases, ideas y pensamientos propios. Mi objetivo fue darles un sentido visual único, uniendo mis reflexiones personales con mi gran pasión por el diseño de moda y la cultura del streetwear." data-en="Made it this far? :) I hope you like these t-shirts I developed around my own phrases, ideas, and thoughts. My goal was to give them a unique visual meaning, blending my personal reflections with my deep passion for fashion design and streetwear culture.">Made it this far? :) I hope you like these t-shirts I developed around my own phrases, ideas, and thoughts. My goal was to give them a unique visual meaning, blending my personal reflections with my deep passion for fashion design and streetwear culture.</p>
+    </div>
+</div>
+
+<div class="galeria-horizontal">
+    <div class="item-scroll ar-panoramico">
+        <img src="img/TS1.avif" alt="Panorámica 1" loading="lazy" decoding="async">
+    </div>
+    <div class="item-scroll ar-panoramico">
+        <img src="img/TS2.avif" alt="Panorámica 2" loading="lazy" decoding="async">
+    </div>
+    <div class="item-scroll ar-panoramico">
+        <img src="img/TS3.avif" alt="Panorámica 3" loading="lazy" decoding="async">
+    </div>
+    <div class="item-scroll ar-panoramico">
+        <img src="img/TS4.avif" alt="Panorámica 4" loading="lazy" decoding="async">
+    </div>
+    <div class="item-scroll ar-panoramico">
+        <img src="img/TS5.avif" alt="Panorámica 5" loading="lazy" decoding="async">
+    </div>
+    <div class="item-scroll ar-panoramico">
+        <img src="img/TS6.avif" alt="Panorámica 6" loading="lazy" decoding="async">
+    </div>
+</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+   <section id="contacto" class="seccion" style="padding-bottom: 200px; padding-left: 0; padding-right: 0;">
+        <div class="wrapper-alineacion contacto-flex reveal">
+            
+            <div class="contacto-izq">
+                <span class="titulo-seccion-about trans" data-es="CONTACTO" data-en="CONTACT" style=s"margin-bottom: 20px; display: block;">CONTACTO</span>
+                
+                <div class="botones-contacto">
+                    <!-- Aquí pones el correo real para que envíe el mail -->
+                    <a href="mailto:tu_correo_real@gmail.com" class="btn-solido btn-correo">EMAIL_PLACEHOLDER@GMAIL.COM</a>
+                    
+                   <!-- Aquí pones el link real de tu LinkedIn -->
+<a href="URL_LINKEDIN_AQUI" target="_blank" class="btn-solido btn-linkedin" aria-label="LinkedIn">
+    <svg viewBox="0 0 24 24" fill="#ffffff" width="28" height="28">
+        <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/>
+    </svg>
+</a>
+                </div>
+            </div>
+
+           <div class="contacto-der">
+                <img src="img/logo2.png" alt="CLOC by Daniel Lugo" class="logo-contacto" style="cursor: pointer;" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">
+            </div>
+
+        </div>
+    </section>
+
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" id="lightbox-close">&times;</span>
+        <span class="lightbox-btn lightbox-prev" id="lightbox-prev">&lt;</span>
+        <img class="lightbox-img" id="lightbox-img" src="" alt="Vista ampliada">
+        <iframe class="lightbox-iframe" id="lightbox-iframe" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        <span class="lightbox-btn lightbox-next" id="lightbox-next">&gt;</span>
+    </div>
+
+    <script src="https://player.vimeo.com/api/player.js"></script>
+
+    <script>
+        // --- LOGO FADE ---
+        window.addEventListener('scroll', () => {
+            const logo = document.getElementById('main-logo');
+            if (!logo) return;
+            const scrollPos = window.scrollY;
+            const fadeThreshold = 150;
+            const newOpacity = Math.max(0, 1 - (scrollPos / fadeThreshold));
+            logo.style.opacity = newOpacity;
+            logo.style.pointerEvents = newOpacity < 0.1 ? 'none' : 'auto';
+        });
+
+        // --- ANIMACIONES HERO ---
+        const ctaBtn = document.getElementById('cta-decrypter');
+        const cypherTexts = document.querySelectorAll('.cypher-text');
+        const alienChars = "||_//¯-";
+        const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
+        let isDecrypted = false;
+
+        function triggerDecrypt() {
+            if (isDecrypted) return; 
+            isDecrypted = true;
+            ctaBtn.classList.add('activado');
+            cypherTexts.forEach(el => {
+                const targetWord = el.getAttribute('data-target');
+                let iterations = 0.7;
+                el.classList.add('decrypted');
+                const interval = setInterval(() => {
+                    el.innerText = targetWord.split("").map((char, index) => {
+                        if (index < iterations) return targetWord[index];
+                        return alienChars[Math.floor(Math.random() * alienChars.length)];
+                    }).join("");
+                    if (iterations >= targetWord.length) clearInterval(interval);
+                    iterations += 0.2; 
+                }, 45);
+            });
+        }
+        ctaBtn.addEventListener('mouseenter', triggerDecrypt);
+        if (isMobile) setTimeout(triggerDecrypt, 2500);
+
+        // --- RELOJ HUD ---
+        function actualizarReloj() {
+            const ahora = new Date();
+            const reloj = document.getElementById('reloj-hud');
+            if(reloj) reloj.innerText = `SYS.TIME // ${ahora.getHours().toString().padStart(2, '0')}:${ahora.getMinutes().toString().padStart(2, '0')}:${ahora.getSeconds().toString().padStart(2, '0')}`;
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+
+        // --- EFECTOS 3D MOUSE ---
+        document.addEventListener('mousemove', (e) => {
+            if (isMobile) return; 
+            const esfera = document.getElementById('esfera-3d');
+            if(esfera) {
+                const x = (window.innerWidth / 2 - e.pageX) / 25;
+                const y = (window.innerHeight / 2 - e.pageY) / 25;
+                esfera.style.transform = `translate(${x}px, ${y}px) rotateX(${-y}deg) rotateY(${x}deg)`;
+            }
+        });
+
+        const tarjetaFoto = document.getElementById('tarjeta-foto');
+        if (!isMobile && tarjetaFoto) { 
+            tarjetaFoto.addEventListener('mousemove', (e) => {
+                tarjetaFoto.classList.remove('reset-animacion');
+                const rect = tarjetaFoto.getBoundingClientRect();
+                const x = e.clientX - rect.left; 
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -25; 
+                const rotateY = ((x - centerX) / centerX) * 25;
+                tarjetaFoto.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+            });
+            tarjetaFoto.addEventListener('mouseleave', () => {
+                tarjetaFoto.classList.add('reset-animacion');
+                tarjetaFoto.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            });
+        }
+
+        // --- FUNCIÓN DEL EFECTO DE ESCRITURA (TYPEWRITER) ACTUALIZADA PARA MULTIIDIOMA ---
+        function startTyping(element) {
+            const text = element.getAttribute('data-text');
+            const delay = parseInt(element.getAttribute('data-delay')) || 0;
+            
+            if (element.delayTimeout) clearTimeout(element.delayTimeout);
+            if (element.typeTimeout) clearTimeout(element.typeTimeout);
+            
+            element.innerHTML = '';
+            element.classList.remove('typing-done');
+            
+            element.delayTimeout = setTimeout(() => {
+                let i = 0;
+                function typeWriter() {
+                    if (i < text.length) {
+                        element.innerHTML = text.substring(0, i + 1);
+                        i++;
+                        const speed = element.tagName === 'H4' ? 30 : 10;
+                        element.typeTimeout = setTimeout(typeWriter, speed);
+                    } else {
+                        // FIX: Corregidas las variables element y text
+                        element.classList.add('typing-done');
+                        const idx = text.indexOf('//');
+                        if (idx !== -1) {
+                            element.innerHTML = text.substring(0, idx) + '<span>' + text.substring(idx) + '</span>';
+                        } else {
+                            // EL MATA-VIUDAS: Reemplaza el último espacio por un &nbsp;
+                            element.innerHTML = text.replace(/ ([^ ]*)$/, '&nbsp;$1'); 
+                        }
+                    }
+                }
+                typeWriter();
+            }, delay);
+        }
+
+        // --- LÓGICA DEL ACORDEÓN ACTUALIZADA PARA MULTIIDIOMA ---
+        const acordeones = document.querySelectorAll('.btn-acordeon');
+        
+        acordeones.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const contenido = this.parentElement.nextElementSibling;
+                const estaActivo = this.classList.contains('activo');
+
+                document.querySelectorAll('.btn-acordeon').forEach(otroBtn => {
+                    otroBtn.classList.remove('activo');
+                    otroBtn.querySelector('.icono-acordeon').innerText = '+';
+                    const otroContenido = otroBtn.parentElement.nextElementSibling;
+                    otroContenido.style.maxHeight = null;
+                    
+                    const targets = otroContenido.querySelectorAll('.type-target');
+                    targets.forEach(t => {
+                        if(t.delayTimeout) clearTimeout(t.delayTimeout);
+                        if(t.typeTimeout) clearTimeout(t.typeTimeout);
+                        const originalText = t.getAttribute('data-text');
+                        
+                        const idx = originalText.indexOf('//');
+                        if (idx !== -1) {
+                            t.innerHTML = originalText.substring(0, idx) + '<span>' + originalText.substring(idx) + '</span>';
+                        } else {
+                            // EL MATA-VIUDAS para el acordeón
+                            t.innerHTML = originalText.replace(/ ([^ ]*)$/, '&nbsp;$1');
+                        }
+                        t.classList.add('typing-done'); 
+                    });
+                });
+
+                if (!estaActivo) {
+                    this.classList.add('activo');
+                    this.querySelector('.icono-acordeon').innerText = '+';
+                    
+                    const targets = contenido.querySelectorAll('.type-target');
+                    targets.forEach(target => target.innerHTML = target.getAttribute('data-text'));
+                    
+                    contenido.style.maxHeight = contenido.scrollHeight + 400 + "px"; 
+
+                    targets.forEach(target => startTyping(target));
+                }
+            });
+        });
+
+        // --- SISTEMA DE LIGHTBOX MULTIMEDIA ---
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxIframe = document.getElementById('lightbox-iframe');
+        let currentGalleryMedia = [];
+        let currentLightboxIndex = 0;
+
+        function openLightbox(galleryElement, clickedItem) {
+            const allItems = Array.from(galleryElement.querySelectorAll('.item-scroll'));
+            currentGalleryMedia = [];
+            const seenKeys = new Set();
+            
+            allItems.forEach(item => {
+                const imgEl = item.querySelector('img');
+                const img = imgEl ? imgEl.src : 'video-placeholder'; 
+                const vType = item.getAttribute('data-video-type');
+                const vId = item.getAttribute('data-video-id');
+                const uniqueKey = vType ? `${vType}-${vId}` : img;
+                
+                if(!seenKeys.has(uniqueKey)) {
+                    seenKeys.add(uniqueKey);
+                    currentGalleryMedia.push({ src: img, type: vType || 'image', id: vId });
+                }
+            });
+
+            const cImgEl = clickedItem.querySelector('img');
+            const cImg = cImgEl ? cImgEl.src : 'video-placeholder';
+            const cType = clickedItem.getAttribute('data-video-type');
+            const cId = clickedItem.getAttribute('data-video-id');
+            const cKey = cType ? `${cType}-${cId}` : cImg;
+            
+            currentLightboxIndex = currentGalleryMedia.findIndex(m => {
+                const mKey = m.type !== 'image' ? `${m.type}-${m.id}` : m.src;
+                return mKey === cKey;
+            });
+            
+            if(currentLightboxIndex === -1) currentLightboxIndex = 0;
+            
+            updateLightboxContent();
+            lightbox.classList.add('active');
+        }
+
+        function updateLightboxContent() {
+            const media = currentGalleryMedia[currentLightboxIndex];
+            
+            lightboxImg.style.display = 'none';
+            lightboxIframe.style.display = 'none';
+            lightboxIframe.src = ''; 
+            
+            if (media.type === 'youtube') {
+                lightboxIframe.src = `https://www.youtube.com/embed/${media.id}?autoplay=1&rel=0&modestbranding=1&color=white`;
+                lightboxIframe.style.display = 'block';
+            } else if (media.type === 'vimeo') {
+                lightboxIframe.src = `https://player.vimeo.com/video/${media.id}?autoplay=1&color=cc00cc&title=0&byline=0&portrait=0`;
+                lightboxIframe.style.display = 'block';
+                
+                if (typeof Vimeo !== 'undefined') {
+                    const lbPlayer = new Vimeo.Player(lightboxIframe);
+                    lbPlayer.ready().then(() => {
+                        lbPlayer.setPlaybackRate(1.3).catch(e => console.warn(e));
+                    });
+                }
+                
+            } else {
+                lightboxImg.src = media.src;
+                lightboxImg.style.display = 'block';
+            }
+        }
+
+        function changeLightboxImage(dir) {
+            if(currentGalleryMedia.length === 0) return;
+            currentLightboxIndex += dir;
+            if (currentLightboxIndex < 0) currentLightboxIndex = currentGalleryMedia.length - 1;
+            if (currentLightboxIndex >= currentGalleryMedia.length) currentLightboxIndex = 0;
+            updateLightboxContent();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            setTimeout(() => { lightboxIframe.src = ''; }, 300); 
+        }
+
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        document.getElementById('lightbox-prev').addEventListener('click', (e) => { e.stopPropagation(); changeLightboxImage(-1); });
+        document.getElementById('lightbox-next').addEventListener('click', (e) => { e.stopPropagation(); changeLightboxImage(1); });
+        
+        lightbox.addEventListener('click', (e) => {
+            if(e.target === lightbox) closeLightbox();
+        });
+
+        // --- LÓGICA DEL CARRUSEL INFINITO BI-DIRECCIONAL Y DRAG ---
+        const galerias = document.querySelectorAll('.galeria-horizontal');
+        let activeGallery = null; 
+        
+        galerias.forEach(galeria => {
+            galeria.addEventListener('dragstart', (e) => e.preventDefault());
+
+            const originalItems = Array.from(galeria.querySelectorAll('.item-scroll'));
+            
+            originalItems.forEach(item => {
+                const cloneRight = item.cloneNode(true);
+                galeria.appendChild(cloneRight); 
+            });
+            originalItems.slice().reverse().forEach(item => {
+                const cloneLeft = item.cloneNode(true);
+                galeria.insertBefore(cloneLeft, galeria.firstChild); 
+            });
+
+            let setWidth = 0;
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            let autoScrollInterval;
+            let isDraggingFlag = false; 
+
+            const updateLayout = () => {
+                const allItems = galeria.querySelectorAll('.item-scroll');
+                if(allItems.length === 0) return;
+                
+                const numOriginal = originalItems.length;
+                setWidth = allItems[numOriginal].offsetLeft - allItems[0].offsetLeft;
+
+                const textContainer = galeria.previousElementSibling;
+                let offsetLeft = 50; 
+                if (textContainer) {
+                    const infoText = textContainer.querySelector('.info-categoria') || textContainer.querySelector('.proyecto-destacado');
+                    if (infoText) {
+                        offsetLeft = infoText.getBoundingClientRect().left;
+                    }
+                }
+                
+                galeria.style.scrollBehavior = 'auto'; 
+                galeria.scrollLeft = setWidth - offsetLeft;
+            };
+
+            setTimeout(updateLayout, 150);
+            window.addEventListener('resize', updateLayout);
+
+            galeria.addEventListener('scroll', () => {
+                if (setWidth === 0) return;
+                if (galeria.scrollLeft < setWidth * 0.1) {
+                    galeria.style.scrollBehavior = 'auto';
+                    galeria.scrollLeft += setWidth;
+                }
+                else if (galeria.scrollLeft > setWidth * 1.9) {
+                    galeria.style.scrollBehavior = 'auto';
+                    galeria.scrollLeft -= setWidth;
+                }
+            }, { passive: true });
+
+            const startAutoScroll = () => {
+                clearInterval(autoScrollInterval); 
+                autoScrollInterval = setInterval(() => {
+                    if (isDown) return; 
+                    galeria.scrollBy({ left: 200, behavior: 'smooth' });
+                }, 3000); 
+            };
+
+            const stopAutoScroll = () => clearInterval(autoScrollInterval);
+            startAutoScroll();
+
+            const startDrag = (pageX) => {
+                isDown = true;
+                isDraggingFlag = false; 
+                activeGallery = galeria; 
+                stopAutoScroll(); 
+                galeria.style.scrollBehavior = 'auto'; 
+                startX = pageX - galeria.offsetLeft;
+                scrollLeft = galeria.scrollLeft;
+            };
+
+            galeria.endDrag = () => {
+                if(!isDown) return;
+                isDown = false; 
+                activeGallery = null;
+                galeria.style.scrollBehavior = 'smooth'; 
+                startAutoScroll(); 
+                setTimeout(() => { isDraggingFlag = false; }, 50);
+            };
+
+            const onDrag = (pageX) => {
+                if (!isDown) return;
+                const x = pageX - galeria.offsetLeft;
+                if (Math.abs(x - startX) > 5) {
+                    isDraggingFlag = true; 
+                }
+                const walk = (x - startX) * 1; 
+                galeria.scrollLeft = scrollLeft - walk; 
+            };
+
+            galeria.addEventListener('mousedown', (e) => {
+                e.preventDefault(); 
+                startDrag(e.pageX);
+            });
+            galeria.addEventListener('mousemove', (e) => onDrag(e.pageX));
+            galeria.addEventListener('mouseleave', () => galeria.endDrag());
+
+            galeria.addEventListener('touchstart', (e) => startDrag(e.touches[0].pageX), {passive: true});
+            galeria.addEventListener('touchend', () => galeria.endDrag());
+            galeria.addEventListener('touchmove', (e) => onDrag(e.touches[0].pageX), {passive: true});
+
+            galeria.addEventListener('click', (e) => {
+                if (isDraggingFlag) {
+                    e.preventDefault();
+                    return;
+                }
+                const item = e.target.closest('.item-scroll');
+                if (item) {
+                    openLightbox(galeria, item);
+                }
+            });
+        });
+
+        window.addEventListener('mouseup', () => {
+            if(activeGallery) activeGallery.endDrag();
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+        
+        // --- SISTEMA ANTI-LAG: CONTROL INTELIGENTE DE REPRODUCCIÓN (Optimizado con Lazy Load Real) ---
+        setTimeout(() => {
+            if (typeof Vimeo !== 'undefined') {
+                const vimeoIframes = document.querySelectorAll('.iframe-bg');
+                
+                const videoObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const iframe = entry.target;
+
+                        // Cuando el video ENTRA en la pantalla
+                        if (entry.isIntersecting) {
+                            
+                            // 1. Inyectamos la URL real si aún no la tiene
+                            const realSrc = iframe.getAttribute('data-src');
+                            if (!iframe.src || !iframe.src.includes('vimeo')) {
+                                iframe.src = realSrc;
+                            }
+
+                            // 2. Esperamos un instante para que cargue el iframe y luego iniciamos la API de Vimeo
+                            if (!iframe.vPlayer) {
+                                setTimeout(() => {
+                                    iframe.vPlayer = new Vimeo.Player(iframe);
+                                    iframe.vPlayer.ready().then(() => {
+                                        iframe.vPlayer.setMuted(true).catch(() => {}); 
+                                        iframe.vPlayer.setPlaybackRate(1.3).catch(() => {});
+                                        iframe.vPlayer.play().catch(() => {});
+                                    });
+                                }, 150);
+                            } else {
+                                // Si ya fue inicializado antes, solo le damos play
+                                iframe.vPlayer.setMuted(true).then(() => {
+                                    iframe.vPlayer.play().catch(() => {});
+                                });
+                            }
+                            
+                        // Cuando el video SALE de la pantalla
+                        } else {
+                            if (iframe.vPlayer) {
+                                iframe.vPlayer.pause().catch(() => {}); 
+                            }
+                        }
+                    });
+                }, { threshold: 0.05 }); 
+
+                vimeoIframes.forEach(iframe => videoObserver.observe(iframe));
+            }
+        }, 200);
+
+        // --- SISTEMA DE TRADUCCIÓN DINÁMICO (ES / EN) ---
+        let currentLang = 'es'; 
+        const langToggleBtn = document.getElementById('lang-toggle');
+
+        // Creamos una función maestra para aplicar el idioma
+        function aplicarIdioma(idioma) {
+            currentLang = idioma;
+            langToggleBtn.innerText = currentLang === 'es' ? 'EN / ES' : 'ES / EN';
+
+            // Actualizar textos estáticos normales
+            document.querySelectorAll('.trans').forEach(el => {
+                const newHtml = el.getAttribute('data-' + currentLang);
+                if (newHtml) el.innerHTML = newHtml;
+            });
+
+            // Actualizar textos dinámicos con efecto Typewriter
+            document.querySelectorAll('.type-target').forEach(el => {
+                const newText = el.getAttribute('data-' + currentLang);
+                if (newText) {
+                    el.setAttribute('data-text', newText);
+                    const acordeonContent = el.closest('.contenido-acordeon');
+                    if (acordeonContent && acordeonContent.style.maxHeight && acordeonContent.style.maxHeight !== '0px') {
+                        startTyping(el);
+                    } else {
+                        const idx = newText.indexOf('//');
+                        if (idx !== -1) {
+                            el.innerHTML = newText.substring(0, idx) + '<span>' + newText.substring(idx) + '</span>';
+                        } else {
+                            // EL MATA-VIUDAS para el cambio de idioma
+                            el.innerHTML = newText.replace(/ ([^ ]*)$/, '&nbsp;$1');
+                        }
+                    }
+                }
+            });
+
+           // Actualizar textos colosales decodificadores (HERO)
+            document.querySelectorAll('.cypher-text').forEach(el => {
+                const newTarget = el.getAttribute('data-target-' + currentLang);
+                const newInitial = el.getAttribute('data-initial-' + currentLang); // Recupera el texto inicial del idioma actual
+                
+                if (newTarget) {
+                    el.setAttribute('data-target', newTarget);
+                    
+                    if (el.classList.contains('decrypted')) {
+                        el.innerText = newTarget;
+                    } else if (newInitial) {
+                        el.innerText = newInitial; // Aplica la traducción al texto base si aún no pasas el ratón
+                    }
+                }
+            });
+        }
+
+        // El botón ahora alterna usando la función maestra
+        langToggleBtn.addEventListener('click', () => {
+            aplicarIdioma(currentLang === 'es' ? 'en' : 'es');
+        });
+
+        // LA SOLUCIÓN: Forzar la traducción a inglés apenas carga la web
+        document.addEventListener('DOMContentLoaded', () => {
+            aplicarIdioma('en');
+        });
+// --- NAVEGACIÓN SUAVE PERSONALIZADA (ANTI-SALTOS) ---
+        document.querySelectorAll('nav a, .cta-gigante').forEach(enlace => {
+            enlace.addEventListener('click', function(e) {
+                const targetId = this.getAttribute('href');
+                
+                // Verificamos que el clic sea en un enlace interno (que empieza con "#")
+                if (targetId && targetId.startsWith('#')) {
+                    e.preventDefault(); // Bloqueamos el salto nativo inestable del navegador
+                    const targetSection = document.querySelector(targetId);
+                    
+                    if (targetSection) {
+                        window.scrollTo({
+                            top: targetSection.offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+// --- BOTÓN VOLVER ARRIBA ---
+        const btnArriba = document.getElementById('btn-volver-arriba');
+
+        window.addEventListener('scroll', () => {
+            // Mostrar botón cuando el scroll supera el 70% de la página
+            const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollActual = window.scrollY;
+            
+            if (scrollActual > (scrollTotal * 0.7)) {
+                btnArriba.classList.add('visible');
+            } else {
+                btnArriba.classList.remove('visible');
+            }
+        });
+
+        btnArriba.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+<button id="btn-volver-arriba" class="btn-arriba">
+        <span>↑</span>
+    </button>
+</body>
+</html>
