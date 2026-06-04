@@ -45,7 +45,7 @@
 
         .bg-dots {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-image: radial-gradient(rgba(204,0,204,0.26) 1px, transparent 1px);
+            background-image: radial-gradient(rgba(204,0,204,0.27) 1px, transparent 1px);
             background-size: 35px 35px; z-index: -2; pointer-events: none;
         }
 
@@ -527,13 +527,21 @@
             }
 
             /* Alineamos el botón a la IZQUIERDA en la misma línea central del logo */
+           /* --- BOTÓN DE IDIOMA BLINDADO ANTI-SALTOS --- */
             .lang-toggle-btn { 
                 position: fixed !important; 
-                /* El header está a 20px de arriba + la mitad de su propia altura (25px) = 45px */
-                top: 45px; 
-                left: 15px; /* Pegado al margen izquierdo */
-                transform: translateY(-50%); /* Esto lo alinea milimétricamente con el logo */
-                margin: 0;
+                top: 45px !important; 
+                left: 15px !important; 
+                /* Forzamos el scale(1) en reposo para que la transición no se confunda */
+                transform: translateY(-50%) scale(1) !important; 
+                margin: 0 !important;
+            }
+
+            /* Mantenemos el eje Y intacto durante la animación táctil */
+            .lang-toggle-btn:hover,
+            .lang-toggle-btn:active,
+            .lang-toggle-btn:focus { 
+                transform: translateY(-50%) scale(1.05) !important; 
             }
 
             /* Bajamos el HUD para que respire debajo del botón */
