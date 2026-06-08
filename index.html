@@ -339,7 +339,7 @@
 
         /* --- ZOOM GLOBAL DEL ITEM Y COLOR REAL DE LA IMAGEN --- */
         .item-scroll {
-            flex: 0 0 auto; height: 380px; 
+            flex: 0 0 auto; height: 550px; 
             position: relative; background: #0a0a0a; border: 1px solid var(--ui-dim); overflow: hidden; 
             clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
             cursor: grab;
@@ -357,6 +357,8 @@
         .ar-cuadrado { aspect-ratio: 1 / 1; }      
         .ar-retrato { aspect-ratio: 4 / 5; }   
         .ar-panoramico { aspect-ratio: 16 / 9; }
+/* NUEVO ASPECT RATIO */
+        .ar-mix { aspect-ratio: 904 / 1024; }
 
         .item-scroll img {
             width: 100%; height: 100%; object-fit: cover; 
@@ -770,14 +772,10 @@
                         </div>
                     </div>
                     <div class="galeria-horizontal">
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic1April.avif" alt="SyFu 1" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic2April.avif" alt="SyFu 2" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic4April.avif" alt="SyFu 3" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic12April.avif" alt="SyFu 4" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Article2April.avif" alt="SyFu 5" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic6April.avif" alt="SyFu 6" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Article1April.avif" alt="SyFu 7" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic11April.avif" alt="SyFu 8" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/s1.avif" alt="SyFu 1" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/s2.avif" alt="SyFu 3" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/s3.avif" alt="SyFu 4" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/s4.avif" alt="SyFu 5" decoding="async"></div>
                     </div>
 
                     <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
