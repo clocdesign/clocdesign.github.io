@@ -674,46 +674,52 @@
             background: var(--acento);
             box-shadow: 0 0 20px var(--acento);
         }
-/* --- CORRECCIONES GENERALES --- */
-html, body {
-    max-width: 100vw;
-    overflow-x: hidden; /* Evita que la web se estire hacia los lados */
-}
-
-/* --- EFECTO EXCLUSIVO PARA MÓVILES --- */
+/* --- OPTIMIZACIÓN DE GALERÍAS EN MÓVIL --- */
 @media (max-width: 768px) {
     .galeria-horizontal {
         scroll-snap-type: x mandatory;
-        padding: 0 15vw !important; /* Espacio a los lados */
-        gap: 0 !important;
+        padding: 0 15vw !important;
+        gap: 12px !important;
+        scroll-behavior: smooth;
+        align-items: center; /* Centra verticalmente items de distintas alturas */
     }
+
     .item-scroll {
-        flex: 0 0 70vw !important; /* Ancho de la imagen central */
+        flex: 0 0 70vw !important;
+        height: auto !important; /* Libera la altura fija para que la imagen NO se corte */
         scroll-snap-align: center;
         scroll-snap-stop: always;
-        margin: 0 -2vw; /* Acerca un poco las imágenes laterales */
         
-        /* Efecto de escala inicial (más pequeñas a los lados) */
-        transform: scale(0.85);
-        opacity: 0.5;
-        transition: transform 0.4s ease, opacity 0.4s ease;
-    }
-    /* Clase que agrandará la imagen que esté en el centro */
-    .item-scroll.activa {
-        transform: scale(1);
-        opacity: 1;
-        z-index: 2;
-    }
-}
+        /* Inician más pequeñas y opacas */
+        transform: scale(0.78);
+        opacity: 0.4;
+        transition: transform 0.2s ease, opacity 0.2s ease;
 
-/* Solo permite que los elementos crezcan si se usa un ratón (Escritorio) */
-@media (hover: hover) and (pointer: fine) {
-    .item-scroll {
-        pointer-events: auto; /* Restaura clics en computadora */
+        /* Bloquea clics en las imágenes laterales para evitar el bug visual */
+        pointer-events: none;
     }
-    .item-scroll:hover {
-        /* Si tenías un efecto hover en escritorio, se aplicará solo aquí */
-        transform: scale(1.02);
+
+    /* En móvil, las imágenes muestran su proporción real sin recorte */
+    .item-scroll img {
+        width: 100%;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+
+    /* Anulamos los aspect-ratio forzados para que cada imagen respire */
+    .item-scroll.ar-cuadrado,
+    .item-scroll.ar-retrato,
+    .item-scroll.ar-panoramico,
+    .item-scroll.ar-mix {
+        aspect-ratio: unset !important;
+    }
+
+    /* La imagen central se ilumina, agranda y recupera la interactividad */
+    .item-scroll.activa {
+        transform: scale(1.05);
+        opacity: 1;
+        z-index: 10;
+        pointer-events: auto; /* Solo la imagen central puede recibir clics */
     }
 }
     </style>
@@ -1364,80 +1370,245 @@ html, body {
             if(e.target === lightbox) closeLightbox();
         });
 
-        // --- LÓGICA DEL CARRUSEL INFINITO BI-DIRECCIONAL Y DRAG ---
-      document.addEventListener("DOMContentLoaded", () => {
+        // --- LÓGICA DEL CARRUSEL INFINITO BI-DIRECCIONAL Y DRAG (SOLO ESCRITORIO) ---
+        document.addEventListener("DOMContentLoaded", () => {
     const galerias = document.querySelectorAll('.galeria-horizontal');
+    const esDesktop = () => window.innerWidth > 768;
 
     galerias.forEach(galeria => {
-        let isDown = false;
-        let startX, scrollLeft;
-        let autoScrollInterval;
+        // === ESCRITORIO: Carrusel infinito con drag manual (SIN auto-scroll) ===
+        if (esDesktop()) {
+            // Guardamos los items originales ANTES de clonar
+            const itemsOriginales = Array.from(galeria.querySelectorAll('.item-scroll'));
+            const totalOriginales = itemsOriginales.length;
+            if (totalOriginales === 0) return;
 
-        // 1. Lógica de pasar solas (Exclusivo para Escritorio)
-        const iniciarAutoScroll = () => {
-            if (window.innerWidth > 768) {
-                // Pasa automáticamente solo en computadoras
-                autoScrollInterval = setInterval(() => {
-                    galeria.scrollLeft += 2; 
-                }, 30);
+            // Clonamos los items 2 veces más (3 sets en total: [clon] [original] [clon])
+            const clonesAntes = [];
+            const clonesDespues = [];
+            itemsOriginales.forEach(item => {
+                const clonA = item.cloneNode(true);
+                const clonB = item.cloneNode(true);
+                clonA.classList.add('clon-infinito');
+                clonB.classList.add('clon-infinito');
+                clonesAntes.push(clonA);
+                clonesDespues.push(clonB);
+            });
+
+            // Insertamos clones ANTES de los originales
+            const primerItem = galeria.firstElementChild;
+            clonesAntes.forEach(clon => galeria.insertBefore(clon, primerItem));
+
+            // Insertamos clones DESPUÉS de los originales
+            clonesDespues.forEach(clon => galeria.appendChild(clon));
+
+            // Desactivamos el scroll-behavior suave para el reposicionamiento instantáneo
+            galeria.style.scrollBehavior = 'auto';
+
+            // Calculamos el ancho de un set completo de items
+            function calcularAnchoSet() {
+                let ancho = 0;
+                const gap = parseInt(getComputedStyle(galeria).gap) || 20;
+                for (let i = 0; i < totalOriginales; i++) {
+                    const item = galeria.children[i];
+                    if (item) ancho += item.offsetWidth + gap;
+                }
+                return ancho;
             }
-        };
 
-        const detenerAutoScroll = () => {
-            clearInterval(autoScrollInterval);
-        };
+            let anchoSet = calcularAnchoSet();
 
-        // 2. Eventos de arrastre con el mouse (Se desactivan solos en Móvil)
-        galeria.addEventListener('mousedown', (e) => {
-            if (window.innerWidth <= 768) return; // Ignora el toque en móviles para evitar bugs
-            isDown = true;
-            detenerAutoScroll();
-            startX = e.pageX - galeria.offsetLeft;
-            scrollLeft = galeria.scrollLeft;
-        });
+            // Posicionamos el scroll en el set del medio (los originales)
+            galeria.scrollLeft = anchoSet;
 
-        galeria.addEventListener('mouseleave', () => {
-            isDown = false;
-            iniciarAutoScroll();
-        });
+            // Función para reposicionar el scroll sin que el usuario lo note
+            function reposicionarScroll() {
+                const scrollActual = galeria.scrollLeft;
+                // Si se fue muy a la izquierda (entrando al primer set de clones)
+                if (scrollActual < anchoSet * 0.3) {
+                    galeria.scrollLeft += anchoSet;
+                }
+                // Si se fue muy a la derecha (entrando al último set de clones)
+                if (scrollActual > anchoSet * 1.7) {
+                    galeria.scrollLeft -= anchoSet;
+                }
+            }
 
-        galeria.addEventListener('mouseup', () => {
-            isDown = false;
-            iniciarAutoScroll();
-        });
+            // Escuchamos el scroll para reposicionar
+            galeria.addEventListener('scroll', reposicionarScroll);
 
-        galeria.addEventListener('mousemove', (e) => {
-            if (!isDown || window.innerWidth <= 768) return;
-            e.preventDefault();
-            const x = e.pageX - galeria.offsetLeft;
-            const walk = (x - startX) * 2;
-            galeria.scrollLeft = scrollLeft - walk;
-        });
+            // Drag con el mouse (solo escritorio)
+            let isDown = false;
+            let startX, scrollLeftInicio;
+            let dragHappened = false;
 
-        // Arrancamos el movimiento al cargar la página
-        iniciarAutoScroll();
+            galeria.addEventListener('mousedown', (e) => {
+                isDown = true;
+                dragHappened = false;
+                galeria.style.scrollBehavior = 'auto';
+                startX = e.pageX - galeria.offsetLeft;
+                scrollLeftInicio = galeria.scrollLeft;
+                galeria.style.cursor = 'grabbing';
+            });
+
+            galeria.addEventListener('mouseleave', () => {
+                if (isDown) {
+                    isDown = false;
+                    galeria.style.cursor = 'grab';
+                }
+            });
+
+            galeria.addEventListener('mouseup', () => {
+                isDown = false;
+                galeria.style.cursor = 'grab';
+            });
+
+            galeria.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - galeria.offsetLeft;
+                const walk = (x - startX) * 2;
+                if (Math.abs(walk) > 5) dragHappened = true;
+                galeria.scrollLeft = scrollLeftInicio - walk;
+            });
+
+            // Evitar que los clics se disparen después de un drag
+            galeria.addEventListener('click', (e) => {
+                if (dragHappened) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    dragHappened = false;
+                }
+            }, true);
+
+            // Recalcular en resize
+            window.addEventListener('resize', () => {
+                anchoSet = calcularAnchoSet();
+            });
+
+            // Vincular clics de clones al lightbox de los originales
+            const todosLosItems = galeria.querySelectorAll('.item-scroll');
+            todosLosItems.forEach((item) => {
+                item.addEventListener('click', function(e) {
+                    if (dragHappened) return;
+                    // Abrimos el lightbox usando la galería completa
+                    if (typeof openLightbox === 'function') {
+                        openLightbox(galeria, this);
+                    }
+                });
+            });
+
+        } else {
+            // === MÓVIL: Carrusel infinito con snap + swipe nativo ===
+            const itemsOriginales = Array.from(galeria.querySelectorAll('.item-scroll'));
+            const totalOriginales = itemsOriginales.length;
+            if (totalOriginales === 0) return;
+
+            // Clonamos items para crear 3 sets: [clon] [original] [clon]
+            const clonesAntes = [];
+            const clonesDespues = [];
+            itemsOriginales.forEach(item => {
+                const clonA = item.cloneNode(true);
+                const clonB = item.cloneNode(true);
+                clonA.classList.add('clon-infinito');
+                clonB.classList.add('clon-infinito');
+                clonesAntes.push(clonA);
+                clonesDespues.push(clonB);
+            });
+
+            const primerItem = galeria.firstElementChild;
+            clonesAntes.forEach(clon => galeria.insertBefore(clon, primerItem));
+            clonesDespues.forEach(clon => galeria.appendChild(clon));
+
+            // Calculamos el ancho de un set completo
+            function calcularAnchoSetMovil() {
+                let ancho = 0;
+                const gap = parseInt(getComputedStyle(galeria).gap) || 12;
+                for (let i = 0; i < totalOriginales; i++) {
+                    const item = galeria.children[i];
+                    if (item) ancho += item.offsetWidth + gap;
+                }
+                return ancho;
+            }
+
+            // Esperamos un frame para que el layout esté listo
+            requestAnimationFrame(() => {
+                let anchoSet = calcularAnchoSetMovil();
+                
+                // Desactivamos snap momentáneamente para posicionar sin conflicto
+                galeria.style.scrollSnapType = 'none';
+                galeria.style.scrollBehavior = 'auto';
+                galeria.scrollLeft = anchoSet;
+                
+                // Reactivamos snap después de posicionar
+                requestAnimationFrame(() => {
+                    galeria.style.scrollSnapType = 'x mandatory';
+                    galeria.style.scrollBehavior = 'smooth';
+                });
+
+                // Reposicionamiento infinito
+                let reposicionando = false;
+                galeria.addEventListener('scroll', () => {
+                    if (reposicionando) return;
+                    const scrollActual = galeria.scrollLeft;
+                    
+                    if (scrollActual < anchoSet * 0.25 || scrollActual > anchoSet * 1.75) {
+                        reposicionando = true;
+                        // Desactivamos snap para el salto instantáneo
+                        galeria.style.scrollSnapType = 'none';
+                        galeria.style.scrollBehavior = 'auto';
+                        
+                        if (scrollActual < anchoSet * 0.25) {
+                            galeria.scrollLeft += anchoSet;
+                        } else {
+                            galeria.scrollLeft -= anchoSet;
+                        }
+                        
+                        // Reactivamos snap después del salto
+                        requestAnimationFrame(() => {
+                            galeria.style.scrollSnapType = 'x mandatory';
+                            galeria.style.scrollBehavior = 'smooth';
+                            reposicionando = false;
+                        });
+                    }
+                });
+
+                // Detección del item central para efecto de escala
+                function detectarCentro() {
+                    const galeriaRect = galeria.getBoundingClientRect();
+                    const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
+                    const todosItems = galeria.querySelectorAll('.item-scroll');
+                    let mejorItem = null;
+                    let mejorDistancia = Infinity;
+
+                    todosItems.forEach(item => {
+                        const itemRect = item.getBoundingClientRect();
+                        const centroItem = itemRect.left + itemRect.width / 2;
+                        const distancia = Math.abs(centroGaleria - centroItem);
+                        
+                        if (distancia < mejorDistancia) {
+                            mejorDistancia = distancia;
+                            mejorItem = item;
+                        }
+                        item.classList.remove('activa');
+                    });
+
+                    if (mejorItem) {
+                        mejorItem.classList.add('activa');
+                    }
+                }
+
+                galeria.addEventListener('scroll', detectarCentro, { passive: true });
+                detectarCentro(); // Estado inicial
+
+                // Recalcular en resize
+                window.addEventListener('resize', () => {
+                    anchoSet = calcularAnchoSetMovil();
+                });
+            });
+        }
     });
-
-    // 3. Efecto visual móvil: Detectar el centro para agrandar la imagen
-    const items = document.querySelectorAll('.galeria-horizontal .item-scroll');
-    const observer = new IntersectionObserver((entries) => {
-        if (window.innerWidth > 768) return; // Solo aplica a teléfonos
-        
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('activa');
-            } else {
-                entry.target.classList.remove('activa');
-            }
-        });
-    }, { root: null, rootMargin: '0px', threshold: 0.6 });
-
-    items.forEach(item => observer.observe(item));
 });
-
-        window.addEventListener('mouseup', () => {
-            if(activeGallery) activeGallery.endDrag();
-        });
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
@@ -1597,33 +1768,6 @@ html, body {
 <button id="btn-volver-arriba" class="btn-arriba">
         <span>↑</span>
     </button>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Solo ejecutamos este efecto en pantallas móviles
-    if (window.innerWidth <= 768) {
-        
-        // Configuramos el "observador" para detectar el centro de la pantalla
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.6 // Se activa cuando el 60% de la imagen está visible en el centro
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('activa');
-                } else {
-                    entry.target.classList.remove('activa');
-                }
-            });
-        }, observerOptions);
-
-        // Aplicamos el observador a todos los elementos de tus galerías
-        const items = document.querySelectorAll('.galeria-horizontal .item-scroll');
-        items.forEach(item => observer.observe(item));
-    }
-});
-</script>
+<!-- Observer de centro móvil ahora está integrado en el carrusel principal -->
 </body>
 </html>
