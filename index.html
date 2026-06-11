@@ -674,6 +674,35 @@
             background: var(--acento);
             box-shadow: 0 0 20px var(--acento);
         }
+/* --- OPTIMIZACIÓN DE GALERÍAS EN MÓVIL --- */
+@media (max-width: 768px) {
+    .galeria-horizontal {
+        /* Deslizamiento nativo imantado */
+        scroll-snap-type: x mandatory;
+        padding: 0 15vw !important; /* Espacio para dejar asomar las siguientes */
+        gap: 0 !important; 
+        scroll-behavior: smooth;
+    }
+
+    .item-scroll {
+        flex: 0 0 70vw !important; /* La imagen ocupa el 70% de la pantalla */
+        scroll-snap-align: center;
+        scroll-snap-stop: always; /* Frena imagen por imagen de forma controlada */
+        margin: 0 -3vw; /* Acerca las imágenes laterales */
+        
+        /* Inician un poco más pequeñas y opacas */
+        transform: scale(0.85);
+        opacity: 0.5;
+        transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+
+    /* Esta clase iluminará y agrandará la imagen del centro */
+    .item-scroll.activa {
+        transform: scale(1);
+        opacity: 1;
+        z-index: 10;
+    }
+}
     </style>
 </head>
 <body>
@@ -773,9 +802,10 @@
                     </div>
                     <div class="galeria-horizontal">
                         <div class="item-scroll ar-mix"><img src="img/s1.avif" alt="SyFu 1" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/s2.avif" alt="SyFu 3" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/s5.avif" alt="SyFu 3" decoding="async"></div>
                         <div class="item-scroll ar-mix"><img src="img/s3.avif" alt="SyFu 4" decoding="async"></div>
                         <div class="item-scroll ar-mix"><img src="img/s4.avif" alt="SyFu 5" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/s2.avif" alt="SyFu 6" decoding="async"></div>
                     </div>
 
                     <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 60px;">
@@ -1322,127 +1352,75 @@
         });
 
         // --- LÓGICA DEL CARRUSEL INFINITO BI-DIRECCIONAL Y DRAG ---
-        const galerias = document.querySelectorAll('.galeria-horizontal');
-        let activeGallery = null; 
-        
-        galerias.forEach(galeria => {
-            galeria.addEventListener('dragstart', (e) => e.preventDefault());
+       document.addEventListener("DOMContentLoaded", () => {
+    const galerias = document.querySelectorAll('.galeria-horizontal');
 
-            const originalItems = Array.from(galeria.querySelectorAll('.item-scroll'));
-            
-            originalItems.forEach(item => {
-                const cloneRight = item.cloneNode(true);
-                galeria.appendChild(cloneRight); 
-            });
-            originalItems.slice().reverse().forEach(item => {
-                const cloneLeft = item.cloneNode(true);
-                galeria.insertBefore(cloneLeft, galeria.firstChild); 
-            });
+    galerias.forEach(galeria => {
+        let isDown = false;
+        let startX, scrollLeft;
+        let autoScrollInterval;
 
-            let setWidth = 0;
-            let isDown = false;
-            let startX;
-            let scrollLeft;
-            let autoScrollInterval;
-            let isDraggingFlag = false; 
-
-            const updateLayout = () => {
-                const allItems = galeria.querySelectorAll('.item-scroll');
-                if(allItems.length === 0) return;
-                
-                const numOriginal = originalItems.length;
-                setWidth = allItems[numOriginal].offsetLeft - allItems[0].offsetLeft;
-
-                const textContainer = galeria.previousElementSibling;
-                let offsetLeft = 50; 
-                if (textContainer) {
-                    const infoText = textContainer.querySelector('.info-categoria') || textContainer.querySelector('.proyecto-destacado');
-                    if (infoText) {
-                        offsetLeft = infoText.getBoundingClientRect().left;
-                    }
-                }
-                
-                galeria.style.scrollBehavior = 'auto'; 
-                galeria.scrollLeft = setWidth - offsetLeft;
-            };
-
-            setTimeout(updateLayout, 150);
-            window.addEventListener('resize', updateLayout);
-
-            galeria.addEventListener('scroll', () => {
-                if (setWidth === 0) return;
-                if (galeria.scrollLeft < setWidth * 0.1) {
-                    galeria.style.scrollBehavior = 'auto';
-                    galeria.scrollLeft += setWidth;
-                }
-                else if (galeria.scrollLeft > setWidth * 1.9) {
-                    galeria.style.scrollBehavior = 'auto';
-                    galeria.scrollLeft -= setWidth;
-                }
-            }, { passive: true });
-
-            const startAutoScroll = () => {
-                clearInterval(autoScrollInterval); 
+        // 1. Lógica de pasar solas (Exclusivo para Escritorio)
+        const iniciarAutoScroll = () => {
+            if (window.innerWidth > 768) {
+                // Pasa automáticamente solo en computadoras
                 autoScrollInterval = setInterval(() => {
-                    if (isDown) return; 
-                    galeria.scrollBy({ left: 200, behavior: 'smooth' });
-                }, 3000); 
-            };
+                    galeria.scrollLeft += 2; 
+                }, 30);
+            }
+        };
 
-            const stopAutoScroll = () => clearInterval(autoScrollInterval);
-            startAutoScroll();
+        const detenerAutoScroll = () => {
+            clearInterval(autoScrollInterval);
+        };
 
-            const startDrag = (pageX) => {
-                isDown = true;
-                isDraggingFlag = false; 
-                activeGallery = galeria; 
-                stopAutoScroll(); 
-                galeria.style.scrollBehavior = 'auto'; 
-                startX = pageX - galeria.offsetLeft;
-                scrollLeft = galeria.scrollLeft;
-            };
-
-            galeria.endDrag = () => {
-                if(!isDown) return;
-                isDown = false; 
-                activeGallery = null;
-                galeria.style.scrollBehavior = 'smooth'; 
-                startAutoScroll(); 
-                setTimeout(() => { isDraggingFlag = false; }, 50);
-            };
-
-            const onDrag = (pageX) => {
-                if (!isDown) return;
-                const x = pageX - galeria.offsetLeft;
-                if (Math.abs(x - startX) > 5) {
-                    isDraggingFlag = true; 
-                }
-                const walk = (x - startX) * 1; 
-                galeria.scrollLeft = scrollLeft - walk; 
-            };
-
-            galeria.addEventListener('mousedown', (e) => {
-                e.preventDefault(); 
-                startDrag(e.pageX);
-            });
-            galeria.addEventListener('mousemove', (e) => onDrag(e.pageX));
-            galeria.addEventListener('mouseleave', () => galeria.endDrag());
-
-            galeria.addEventListener('touchstart', (e) => startDrag(e.touches[0].pageX), {passive: true});
-            galeria.addEventListener('touchend', () => galeria.endDrag());
-            galeria.addEventListener('touchmove', (e) => onDrag(e.touches[0].pageX), {passive: true});
-
-            galeria.addEventListener('click', (e) => {
-                if (isDraggingFlag) {
-                    e.preventDefault();
-                    return;
-                }
-                const item = e.target.closest('.item-scroll');
-                if (item) {
-                    // openLightbox(galeria, item);
-                }
-            });
+        // 2. Eventos de arrastre con el mouse (Se desactivan solos en Móvil)
+        galeria.addEventListener('mousedown', (e) => {
+            if (window.innerWidth <= 768) return; // Ignora el toque en móviles para evitar bugs
+            isDown = true;
+            detenerAutoScroll();
+            startX = e.pageX - galeria.offsetLeft;
+            scrollLeft = galeria.scrollLeft;
         });
+
+        galeria.addEventListener('mouseleave', () => {
+            isDown = false;
+            iniciarAutoScroll();
+        });
+
+        galeria.addEventListener('mouseup', () => {
+            isDown = false;
+            iniciarAutoScroll();
+        });
+
+        galeria.addEventListener('mousemove', (e) => {
+            if (!isDown || window.innerWidth <= 768) return;
+            e.preventDefault();
+            const x = e.pageX - galeria.offsetLeft;
+            const walk = (x - startX) * 2;
+            galeria.scrollLeft = scrollLeft - walk;
+        });
+
+        // Arrancamos el movimiento al cargar la página
+        iniciarAutoScroll();
+    });
+
+    // 3. Efecto visual móvil: Detectar el centro para agrandar la imagen
+    const items = document.querySelectorAll('.galeria-horizontal .item-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        if (window.innerWidth > 768) return; // Solo aplica a teléfonos
+        
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('activa');
+            } else {
+                entry.target.classList.remove('activa');
+            }
+        });
+    }, { root: null, rootMargin: '0px', threshold: 0.6 });
+
+    items.forEach(item => observer.observe(item));
+});
 
         window.addEventListener('mouseup', () => {
             if(activeGallery) activeGallery.endDrag();
@@ -1606,5 +1584,33 @@
 <button id="btn-volver-arriba" class="btn-arriba">
         <span>↑</span>
     </button>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Solo ejecutamos este efecto en pantallas móviles
+    if (window.innerWidth <= 768) {
+        
+        // Configuramos el "observador" para detectar el centro de la pantalla
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.6 // Se activa cuando el 60% de la imagen está visible en el centro
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('activa');
+                } else {
+                    entry.target.classList.remove('activa');
+                }
+            });
+        }, observerOptions);
+
+        // Aplicamos el observador a todos los elementos de tus galerías
+        const items = document.querySelectorAll('.galeria-horizontal .item-scroll');
+        items.forEach(item => observer.observe(item));
+    }
+});
+</script>
 </body>
 </html>
