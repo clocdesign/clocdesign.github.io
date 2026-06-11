@@ -677,11 +677,11 @@
 /* --- OPTIMIZACIÓN DE GALERÍAS EN MÓVIL --- */
 @media (max-width: 768px) {
     .galeria-horizontal {
-        /* SIN scroll-snap: el snapping se maneja 100% por JS para evitar rebotes */
-        scroll-snap-type: none !important;
+        /* Scroll-snap nativo: iOS lo maneja con animación suave y momentum */
+        scroll-snap-type: x mandatory;
         padding: 0 15vw !important;
         gap: 12px !important;
-        scroll-behavior: auto; /* Auto por defecto; el JS controla cuándo usar smooth */
+        scroll-behavior: auto; /* El momentum nativo de iOS maneja la suavidad */
         align-items: center;
         -webkit-overflow-scrolling: touch;
     }
@@ -689,13 +689,13 @@
     .item-scroll {
         flex: 0 0 70vw !important;
         height: auto !important;
-        /* Sin scroll-snap-align — el JS maneja todo el centrado */
+        scroll-snap-align: center;
+        scroll-snap-stop: always; /* Impide saltar más de un item por swipe */
 
-        /* Inician más pequeñas y opacas */
-        transform: scale(0.85);
-        opacity: 0.45;
-        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), 
-                    opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        /* Inician más pequeñas y opacas — escala sutil para mantener gaps uniformes */
+        transform: scale(0.92);
+        opacity: 0.5;
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         transform-origin: center center;
         will-change: transform, opacity;
 
@@ -718,7 +718,7 @@
         aspect-ratio: unset !important;
     }
 
-    /* La imagen central se ilumina, agranda y recupera la interactividad */
+    /* La imagen central: scale(1) = tamaño natural = coincide con el layout box del snap */
     .item-scroll.activa {
         transform: scale(1);
         opacity: 1;
@@ -1503,12 +1503,13 @@
             });
 
         } else {
-            // === MÓVIL: Carrusel infinito SIN scroll-snap (100% controlado por JS) ===
+            // === MÓVIL: Carrusel infinito con scroll-snap nativo de iOS ===
+            // El snapping lo maneja el navegador. JS solo: detecta centro + loop infinito.
             const itemsOriginales = Array.from(galeria.querySelectorAll('.item-scroll'));
             const totalOriginales = itemsOriginales.length;
             if (totalOriginales === 0) return;
 
-            // Clonamos items para crear 3 sets: [clon] [original] [clon]
+            // Clonamos items para crear 3 sets: [clon-antes] [originales] [clon-después]
             const clonesAntes = [];
             const clonesDespues = [];
             itemsOriginales.forEach(item => {
@@ -1524,7 +1525,7 @@
             clonesAntes.forEach(clon => galeria.insertBefore(clon, primerItem));
             clonesDespues.forEach(clon => galeria.appendChild(clon));
 
-            // Calculamos el ancho de un set completo
+            // Calcula el "stride" de un set: distancia entre item[0] e item[N] (siguiente set)
             function calcularAnchoSetMovil() {
                 let ancho = 0;
                 const gap = parseInt(getComputedStyle(galeria).gap) || 12;
@@ -1535,16 +1536,8 @@
                 return ancho;
             }
 
-            // Calcula la posición de scroll para centrar un item dado
-            function getScrollParaCentrar(item) {
-                const galeriaRect = galeria.getBoundingClientRect();
-                const itemRect = item.getBoundingClientRect();
-                const offset = (itemRect.left - galeriaRect.left) + galeria.scrollLeft;
-                return offset - (galeriaRect.width / 2) + (itemRect.width / 2);
-            }
-
-            // Encuentra el item más cercano al centro
-            function encontrarItemCentral() {
+            // Actualiza la clase .activa en el item más cercano al centro del viewport
+            function actualizarCentro() {
                 const galeriaRect = galeria.getBoundingClientRect();
                 const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
                 const todosItems = galeria.querySelectorAll('.item-scroll');
@@ -1555,145 +1548,93 @@
                     const itemRect = item.getBoundingClientRect();
                     const centroItem = itemRect.left + itemRect.width / 2;
                     const distancia = Math.abs(centroGaleria - centroItem);
-                    
                     if (distancia < mejorDistancia) {
                         mejorDistancia = distancia;
                         mejorItem = item;
                     }
+                    item.classList.remove('activa');
                 });
-                return mejorItem;
-            }
 
-            // Actualiza la clase .activa en el item más cercano al centro
-            function actualizarCentro() {
-                const todosItems = galeria.querySelectorAll('.item-scroll');
-                const mejorItem = encontrarItemCentral();
-
-                todosItems.forEach(item => item.classList.remove('activa'));
                 if (mejorItem) mejorItem.classList.add('activa');
             }
 
-            // Esperamos un frame para que el layout esté listo
+            // Esperamos a que el layout esté listo
             requestAnimationFrame(() => {
                 let anchoSet = calcularAnchoSetMovil();
-                
-                // Posicionamos el scroll en el set del medio (los originales) — sin animación
+
+                // Posición inicial: inicio del set de originales, sin animación
+                galeria.style.scrollSnapType = 'none';
                 galeria.scrollLeft = anchoSet;
-                actualizarCentro();
 
-                // --- SISTEMA DE SNAP MANUAL POR TOUCH ---
-                let touchStartX = 0;
-                let touchStartScroll = 0;
-                let isTouching = false;
-                let lastTouchTime = 0;
+                // Re-habilitar snap después de que el salto se pinte
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        galeria.style.scrollSnapType = 'x mandatory';
+                        actualizarCentro();
+                    });
+                });
 
-                galeria.addEventListener('touchstart', (e) => {
-                    isTouching = true;
-                    touchStartX = e.touches[0].clientX;
-                    touchStartScroll = galeria.scrollLeft;
-                    lastTouchTime = Date.now();
-                }, { passive: true });
-
-                galeria.addEventListener('touchend', (e) => {
-                    if (!isTouching) return;
-                    isTouching = false;
-
-                    const touchEndX = e.changedTouches[0].clientX;
-                    const deltaX = touchStartX - touchEndX;
-                    const deltaTime = Date.now() - lastTouchTime;
-                    const velocidad = Math.abs(deltaX) / deltaTime; // px/ms
-
-                    // Determinar item de destino
-                    const todosItems = Array.from(galeria.querySelectorAll('.item-scroll'));
-                    const galeriaRect = galeria.getBoundingClientRect();
-                    const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
-
-                    // Si el swipe fue rápido o suficientemente largo, avanzar/retroceder un item
-                    if (Math.abs(deltaX) > 30 && (velocidad > 0.3 || Math.abs(deltaX) > galeriaRect.width * 0.15)) {
-                        // Encontrar el item activo actual
-                        const itemActual = encontrarItemCentral();
-                        const indexActual = todosItems.indexOf(itemActual);
-                        
-                        let targetIndex;
-                        if (deltaX > 0) {
-                            // Swipe izquierda → siguiente item
-                            targetIndex = Math.min(indexActual + 1, todosItems.length - 1);
-                        } else {
-                            // Swipe derecha → item anterior
-                            targetIndex = Math.max(indexActual - 1, 0);
-                        }
-                        
-                        const targetItem = todosItems[targetIndex];
-                        const targetScroll = getScrollParaCentrar(targetItem);
-                        
-                        galeria.scrollTo({
-                            left: targetScroll,
-                            behavior: 'smooth'
-                        });
-                    } else {
-                        // Swipe corto/lento → snap al más cercano al centro
-                        const mejorItem = encontrarItemCentral();
-                        if (mejorItem) {
-                            const targetScroll = getScrollParaCentrar(mejorItem);
-                            galeria.scrollTo({
-                                left: targetScroll,
-                                behavior: 'smooth'
-                            });
-                        }
-                    }
-                }, { passive: true });
-
-                // --- DETECCIÓN DEL CENTRO DURANTE SCROLL (visual feedback) ---
+                // --- DETECCIÓN DEL CENTRO (feedback visual de escala/opacidad) ---
                 let scrollRAF = null;
                 galeria.addEventListener('scroll', () => {
                     if (scrollRAF) cancelAnimationFrame(scrollRAF);
-                    scrollRAF = requestAnimationFrame(() => {
-                        actualizarCentro();
-                    });
+                    scrollRAF = requestAnimationFrame(actualizarCentro);
                 }, { passive: true });
 
-                // --- REPOSICIONAMIENTO INFINITO (loop sin glitch) ---
+                // --- LOOP INFINITO: reposicionar cuando el scroll se detiene ---
+                // Estructura: [SET_A: 0..anchoSet] [SET_B: anchoSet..2*anchoSet] [SET_C: 2*anchoSet..3*anchoSet]
+                // Zona segura = SET_B (los originales). Si entramos en A o C, saltamos a B.
                 let reposicionando = false;
-                
-                function verificarLimites() {
-                    if (reposicionando || isTouching) return;
-                    const scrollActual = galeria.scrollLeft;
-                    
-                    // Umbrales más conservadores para que el usuario nunca vea el borde
-                    if (scrollActual < anchoSet * 0.4 || scrollActual > anchoSet * 1.6) {
-                        reposicionando = true;
-                        
-                        if (scrollActual < anchoSet * 0.4) {
-                            galeria.scrollLeft += anchoSet;
-                        } else {
-                            galeria.scrollLeft -= anchoSet;
-                        }
-                        
-                        // Esperar a que el salto se aplique visualmente antes de desbloquear
-                        requestAnimationFrame(() => {
-                            requestAnimationFrame(() => {
-                                reposicionando = false;
-                                actualizarCentro();
-                            });
-                        });
-                    }
-                }
-
-                // Verificar límites después de que el scroll se detenga (no durante)
                 let scrollEndTimer = null;
+
                 galeria.addEventListener('scroll', () => {
+                    // Debounce: esperar a que el scroll se detenga por completo
                     if (scrollEndTimer) clearTimeout(scrollEndTimer);
                     scrollEndTimer = setTimeout(() => {
-                        verificarLimites();
-                    }, 150); // Espera 150ms después del último evento scroll
+                        if (reposicionando) return;
+                        const scrollActual = galeria.scrollLeft;
+
+                        // ¿Estamos en SET_A (clones-antes)?
+                        const enSetA = scrollActual < anchoSet;
+                        // ¿Estamos en SET_C (clones-después)?
+                        const enSetC = scrollActual >= anchoSet * 2;
+
+                        if (enSetA || enSetC) {
+                            reposicionando = true;
+
+                            // 1. Desactivar snap para salto instantáneo
+                            galeria.style.scrollSnapType = 'none';
+
+                            // 2. Saltar al equivalente en SET_B
+                            if (enSetA) {
+                                galeria.scrollLeft = scrollActual + anchoSet;
+                            } else {
+                                galeria.scrollLeft = scrollActual - anchoSet;
+                            }
+
+                            // 3. Esperar 2 frames para que el browser pinte, luego re-habilitar snap
+                            requestAnimationFrame(() => {
+                                requestAnimationFrame(() => {
+                                    galeria.style.scrollSnapType = 'x mandatory';
+                                    reposicionando = false;
+                                    actualizarCentro();
+                                });
+                            });
+                        }
+                    }, 120);
                 }, { passive: true });
 
-                // Recalcular en resize
+                // Recalcular en cambio de orientación o resize
                 window.addEventListener('resize', () => {
                     anchoSet = calcularAnchoSetMovil();
-                    // Reposicionar al centro del set de originales
+                    galeria.style.scrollSnapType = 'none';
                     galeria.scrollLeft = anchoSet;
-                    actualizarCentro();
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            galeria.style.scrollSnapType = 'x mandatory';
+                            actualizarCentro();
+                        });
+                    });
                 });
             });
         }
