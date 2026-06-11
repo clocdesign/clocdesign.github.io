@@ -676,40 +676,37 @@
         }
 /* --- OPTIMIZACIÓN DE GALERÍAS EN MÓVIL --- */
 @media (max-width: 768px) {
-    /* Bloquear el arrastre horizontal de toda la página (elastic overscroll de iOS) */
+    /* Bloquear todo movimiento horizontal de la página en iOS */
     html, body {
+        overflow-x: clip !important;  /* Más fuerte que hidden — no crea scroll context */
         overscroll-behavior-x: none;
     }
 
     .galeria-horizontal {
-        /* Scroll-snap nativo: iOS lo maneja con animación suave y momentum */
         scroll-snap-type: x mandatory;
-        padding: 0 15vw !important;
+        padding: 20px 15vw !important; /* Vertical: espacio para scale(1.05) sin recortar */
         gap: 12px !important;
         scroll-behavior: auto;
         align-items: center;
         -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain; /* Evita que el scroll del carrusel propague al body */
+        overscroll-behavior: contain;
     }
 
     .item-scroll {
         flex: 0 0 70vw !important;
         height: auto !important;
         scroll-snap-align: center;
-        scroll-snap-stop: normal; /* 'always' pelea con el reposicionamiento del loop */
+        scroll-snap-stop: always; /* Un item por swipe — ya no pelea con el loop debounced */
 
-        /* Escala reducida para que la central resalte más */
         transform: scale(0.88);
         opacity: 0.5;
         transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         transform-origin: center center;
         will-change: transform, opacity;
 
-        /* Borde morado siempre brillante en móvil */
         border-color: var(--acento) !important;
         box-shadow: 0 0 6px rgba(204, 0, 204, 0.35);
 
-        /* Bloquea clics en las imágenes laterales */
         pointer-events: none;
     }
 
@@ -726,7 +723,6 @@
         aspect-ratio: unset !important;
     }
 
-    /* Imagen central: más grande para resaltar, respeta aspect-ratio */
     .item-scroll.activa {
         transform: scale(1.05);
         opacity: 1;
@@ -735,7 +731,6 @@
         box-shadow: 0 0 14px rgba(204, 0, 204, 0.5);
     }
 
-    /* Durante el salto del loop infinito: sin transiciones para evitar parpadeo */
     .galeria-horizontal.saltando .item-scroll {
         transition: none !important;
     }
@@ -1624,37 +1619,48 @@
                 });
 
                 // ═══════════════════════════════════════════════════
-                // SCROLL LISTENER
+                // SCROLL LISTENER: debounced jump (no interrumpe animaciones)
                 // ═══════════════════════════════════════════════════
                 let reposicionando = false;
                 let scrollRAF = null;
-                let lockoutTimer = null;
+                let scrollEndTimer = null;
 
                 galeria.addEventListener('scroll', () => {
 
-                    // ── 1. BOUNDARY CHECK (síncrono, cada evento) ──
+                    // ── 1. EMERGENCIA: borde absoluto del contenedor (O(1), ultra barato) ──
+                    // Solo se activa si el usuario llegó físicamente al límite del scroll.
                     if (!reposicionando) {
-                        const idx = indiceCentral();
-                        if (idx < totalOriginales || idx >= totalOriginales * 2) {
+                        const s = galeria.scrollLeft;
+                        const maxS = galeria.scrollWidth - galeria.clientWidth;
+                        if (s <= 5 || s >= maxS - 5) {
                             reposicionando = true;
-                            try {
-                                ejecutarSalto();
-                            } finally {
-                                // Lockout hasta que el scroll se detenga
-                                if (lockoutTimer) clearTimeout(lockoutTimer);
-                                lockoutTimer = setTimeout(() => {
-                                    // Safety: si aún en clones, saltar de nuevo
-                                    const finalIdx = indiceCentral();
-                                    if (finalIdx < totalOriginales || finalIdx >= totalOriginales * 2) {
-                                        ejecutarSalto();
-                                    }
-                                    reposicionando = false;
-                                }, 200);
-                            }
+                            ejecutarSalto();
+                            setTimeout(() => { reposicionando = false; }, 250);
+                            return;
                         }
                     }
 
-                    // ── 2. VISUAL UPDATE (rAF throttled) ──
+                    // ── 2. DEBOUNCED: saltar cuando el scroll se detenga (150ms) ──
+                    // Esto NUNCA interrumpe una animación de scroll-snap en progreso.
+                    // El salto es invisible porque el contenido clon/original es idéntico.
+                    if (scrollEndTimer) clearTimeout(scrollEndTimer);
+                    scrollEndTimer = setTimeout(() => {
+                        if (!reposicionando) {
+                            const idx = indiceCentral();
+                            if (idx < totalOriginales || idx >= totalOriginales * 2) {
+                                reposicionando = true;
+                                ejecutarSalto();
+                                // 2 frames para que el browser pinte el estado final
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        reposicionando = false;
+                                    });
+                                });
+                            }
+                        }
+                    }, 150);
+
+                    // ── 3. VISUAL UPDATE (rAF throttled) ──
                     if (scrollRAF) cancelAnimationFrame(scrollRAF);
                     scrollRAF = requestAnimationFrame(actualizarCentro);
 
