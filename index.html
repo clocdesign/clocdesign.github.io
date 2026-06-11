@@ -676,23 +676,29 @@
         }
 /* --- OPTIMIZACIÓN DE GALERÍAS EN MÓVIL --- */
 @media (max-width: 768px) {
+    /* Bloquear el arrastre horizontal de toda la página (elastic overscroll de iOS) */
+    html, body {
+        overscroll-behavior-x: none;
+    }
+
     .galeria-horizontal {
         /* Scroll-snap nativo: iOS lo maneja con animación suave y momentum */
         scroll-snap-type: x mandatory;
         padding: 0 15vw !important;
         gap: 12px !important;
-        scroll-behavior: auto; /* El momentum nativo de iOS maneja la suavidad */
+        scroll-behavior: auto;
         align-items: center;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain; /* Evita que el scroll del carrusel propague al body */
     }
 
     .item-scroll {
         flex: 0 0 70vw !important;
         height: auto !important;
         scroll-snap-align: center;
-        scroll-snap-stop: always; /* Impide saltar más de un item por swipe */
+        scroll-snap-stop: always;
 
-        /* Inician más pequeñas y opacas — escala sutil para mantener gaps uniformes */
+        /* Escala sutil para mantener gaps uniformes */
         transform: scale(0.92);
         opacity: 0.5;
         transition: transform 0.3s ease-out, opacity 0.3s ease-out;
@@ -703,14 +709,12 @@
         pointer-events: none;
     }
 
-    /* En móvil, las imágenes muestran su proporción real sin recorte */
     .item-scroll img {
         width: 100%;
         height: auto !important;
         object-fit: contain !important;
     }
 
-    /* Anulamos los aspect-ratio forzados para que cada imagen respire */
     .item-scroll.ar-cuadrado,
     .item-scroll.ar-retrato,
     .item-scroll.ar-panoramico,
@@ -1574,54 +1578,42 @@
                     });
                 });
 
-                // --- DETECCIÓN DEL CENTRO (feedback visual de escala/opacidad) ---
+                // --- DETECCIÓN DEL CENTRO + LOOP INFINITO EN TIEMPO REAL ---
+                // Un solo listener de scroll con rAF hace ambas cosas:
+                // 1. Actualiza .activa en el item más cercano al centro
+                // 2. Reposiciona el scroll al set central si entramos en zona de clones
+                //    (funciona MIENTRAS el dedo está presionado, no solo al soltar)
+                let reposicionando = false;
                 let scrollRAF = null;
+
                 galeria.addEventListener('scroll', () => {
                     if (scrollRAF) cancelAnimationFrame(scrollRAF);
-                    scrollRAF = requestAnimationFrame(actualizarCentro);
-                }, { passive: true });
+                    scrollRAF = requestAnimationFrame(() => {
+                        // 1. Feedback visual: marcar el item central
+                        actualizarCentro();
 
-                // --- LOOP INFINITO: reposicionar cuando el scroll se detiene ---
-                // Estructura: [SET_A: 0..anchoSet] [SET_B: anchoSet..2*anchoSet] [SET_C: 2*anchoSet..3*anchoSet]
-                // Zona segura = SET_B (los originales). Si entramos en A o C, saltamos a B.
-                let reposicionando = false;
-                let scrollEndTimer = null;
-
-                galeria.addEventListener('scroll', () => {
-                    // Debounce: esperar a que el scroll se detenga por completo
-                    if (scrollEndTimer) clearTimeout(scrollEndTimer);
-                    scrollEndTimer = setTimeout(() => {
+                        // 2. Loop infinito en tiempo real
                         if (reposicionando) return;
-                        const scrollActual = galeria.scrollLeft;
+                        const s = galeria.scrollLeft;
 
-                        // ¿Estamos en SET_A (clones-antes)?
-                        const enSetA = scrollActual < anchoSet;
-                        // ¿Estamos en SET_C (clones-después)?
-                        const enSetC = scrollActual >= anchoSet * 2;
-
-                        if (enSetA || enSetC) {
+                        // [SET_A: 0..anchoSet] [SET_B: anchoSet..2*anchoSet] [SET_C: 2*anchoSet+]
+                        if (s < anchoSet || s >= anchoSet * 2) {
                             reposicionando = true;
-
-                            // 1. Desactivar snap para salto instantáneo
                             galeria.style.scrollSnapType = 'none';
 
-                            // 2. Saltar al equivalente en SET_B
-                            if (enSetA) {
-                                galeria.scrollLeft = scrollActual + anchoSet;
+                            if (s < anchoSet) {
+                                galeria.scrollLeft = s + anchoSet;
                             } else {
-                                galeria.scrollLeft = scrollActual - anchoSet;
+                                galeria.scrollLeft = s - anchoSet;
                             }
 
-                            // 3. Esperar 2 frames para que el browser pinte, luego re-habilitar snap
+                            // Esperar 1 frame para que el browser aplique el salto
                             requestAnimationFrame(() => {
-                                requestAnimationFrame(() => {
-                                    galeria.style.scrollSnapType = 'x mandatory';
-                                    reposicionando = false;
-                                    actualizarCentro();
-                                });
+                                galeria.style.scrollSnapType = 'x mandatory';
+                                reposicionando = false;
                             });
                         }
-                    }, 120);
+                    });
                 }, { passive: true });
 
                 // Recalcular en cambio de orientación o resize
