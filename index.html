@@ -696,10 +696,10 @@
         flex: 0 0 70vw !important;
         height: auto !important;
         scroll-snap-align: center;
-        scroll-snap-stop: always;
+        scroll-snap-stop: normal; /* 'always' pelea con el reposicionamiento del loop */
 
-        /* Escala sutil para mantener gaps uniformes */
-        transform: scale(0.92);
+        /* Escala reducida para que la central resalte más */
+        transform: scale(0.88);
         opacity: 0.5;
         transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         transform-origin: center center;
@@ -726,13 +726,13 @@
         aspect-ratio: unset !important;
     }
 
-    /* La imagen central: scale(1) = tamaño natural = coincide con el layout box del snap */
+    /* Imagen central: más grande para resaltar, respeta aspect-ratio */
     .item-scroll.activa {
-        transform: scale(1);
+        transform: scale(1.05);
         opacity: 1;
         z-index: 10;
         pointer-events: auto;
-        box-shadow: 0 0 12px rgba(204, 0, 204, 0.5);
+        box-shadow: 0 0 14px rgba(204, 0, 204, 0.5);
     }
 
     /* Durante el salto del loop infinito: sin transiciones para evitar parpadeo */
@@ -1522,7 +1522,7 @@
             const totalOriginales = itemsOriginales.length;
             if (totalOriginales === 0) return;
 
-            // Clonamos items para crear 3 sets: [SET_A: clones] [SET_B: originales] [SET_C: clones]
+            // Clonar: [SET_A: clones-antes] [SET_B: originales] [SET_C: clones-después]
             const clonesAntes = [];
             const clonesDespues = [];
             itemsOriginales.forEach(item => {
@@ -1533,64 +1533,89 @@
                 clonesAntes.push(clonA);
                 clonesDespues.push(clonB);
             });
-
-            const primerItem = galeria.firstElementChild;
-            clonesAntes.forEach(clon => galeria.insertBefore(clon, primerItem));
+            // Insertar SET_A antes de los originales (en orden)
+            const primerOriginal = galeria.firstElementChild;
+            clonesAntes.forEach(clon => galeria.insertBefore(clon, primerOriginal));
+            // Insertar SET_C después de todo
             clonesDespues.forEach(clon => galeria.appendChild(clon));
 
-            // Cálculo PRECISO del stride usando offsetLeft:
-            // Mide la distancia real entre el primer item de SET_A y el primer item de SET_B.
-            // Una sola medición DOM = cero errores de redondeo acumulados.
-            function calcularAnchoSetMovil() {
-                const primerSetA = galeria.children[0];
-                const primerSetB = galeria.children[totalOriginales];
-                if (!primerSetA || !primerSetB) return 0;
-                return primerSetB.offsetLeft - primerSetA.offsetLeft;
-            }
-
-            // Marca el item más cercano al centro del viewport con .activa
+            // Marca el item más cercano al centro del viewport
             function actualizarCentro() {
                 const galeriaRect = galeria.getBoundingClientRect();
                 const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
-                const todosItems = galeria.querySelectorAll('.item-scroll');
+                const items = galeria.children;
                 let mejorItem = null;
-                let mejorDistancia = Infinity;
+                let mejorDist = Infinity;
 
-                todosItems.forEach(item => {
-                    const itemRect = item.getBoundingClientRect();
-                    const centroItem = itemRect.left + itemRect.width / 2;
-                    const distancia = Math.abs(centroGaleria - centroItem);
-                    if (distancia < mejorDistancia) {
-                        mejorDistancia = distancia;
-                        mejorItem = item;
-                    }
-                    item.classList.remove('activa');
-                });
-
+                for (let i = 0; i < items.length; i++) {
+                    const rect = items[i].getBoundingClientRect();
+                    const centro = rect.left + rect.width / 2;
+                    const d = Math.abs(centroGaleria - centro);
+                    if (d < mejorDist) { mejorDist = d; mejorItem = items[i]; }
+                    items[i].classList.remove('activa');
+                }
                 if (mejorItem) mejorItem.classList.add('activa');
             }
 
-            // Ejecuta el salto de reposicionamiento
-            function ejecutarSalto(galeria, scrollActual, anchoSet) {
+            // Encuentra el índice del item más cercano al centro
+            function indiceCentral() {
+                const galeriaRect = galeria.getBoundingClientRect();
+                const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
+                const items = galeria.children;
+                let mejorIdx = 0;
+                let mejorDist = Infinity;
+
+                for (let i = 0; i < items.length; i++) {
+                    const rect = items[i].getBoundingClientRect();
+                    const centro = rect.left + rect.width / 2;
+                    const d = Math.abs(centroGaleria - centro);
+                    if (d < mejorDist) { mejorDist = d; mejorIdx = i; }
+                }
+                return mejorIdx;
+            }
+
+            // Scrollea para centrar un item por su índice (pixel-perfect)
+            function scrollearAItem(idx) {
+                const item = galeria.children[idx];
+                if (!item) return;
+                // offsetLeft = posición real del item en el contenedor
+                // Centrarlo = poner su centro en el centro del viewport de la galería
+                const itemLeft = item.offsetLeft;
+                const itemWidth = item.offsetWidth;
+                const galeriaWidth = galeria.clientWidth;
+                galeria.scrollLeft = itemLeft - (galeriaWidth - itemWidth) / 2;
+            }
+
+            // Ejecuta el salto: encuentra el item central, mapéalo a SET_B, scrollea ahí
+            function ejecutarSalto() {
+                const idx = indiceCentral();
+                let targetIdx;
+
+                if (idx < totalOriginales) {
+                    // En SET_A → mapear a SET_B
+                    targetIdx = idx + totalOriginales;
+                } else if (idx >= totalOriginales * 2) {
+                    // En SET_C → mapear a SET_B
+                    targetIdx = idx - totalOriginales;
+                } else {
+                    return false; // Ya en SET_B
+                }
+
                 galeria.classList.add('saltando');
                 galeria.style.scrollSnapType = 'none';
-                galeria.scrollLeft = scrollActual < anchoSet
-                    ? scrollActual + anchoSet
-                    : scrollActual - anchoSet;
+                scrollearAItem(targetIdx);
                 galeria.style.scrollSnapType = 'x mandatory';
                 actualizarCentro();
-                void galeria.offsetHeight; // Forzar reflow con transiciones deshabilitadas
+                void galeria.offsetHeight;
                 galeria.classList.remove('saltando');
+                return true;
             }
 
             // Esperamos a que el layout esté listo
             requestAnimationFrame(() => {
-                let anchoSet = calcularAnchoSetMovil();
-                if (anchoSet === 0) return;
-
-                // Posición inicial: primer item de SET_B centrado
+                // Posición inicial: primer item de SET_B
                 galeria.style.scrollSnapType = 'none';
-                galeria.scrollLeft = anchoSet;
+                scrollearAItem(totalOriginales);
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         galeria.style.scrollSnapType = 'x mandatory';
@@ -1598,52 +1623,48 @@
                     });
                 });
 
-                // ═══════════════════════════════════════════════════════════
-                // SCROLL LISTENER: boundary check SÍNCRONO + visual rAF
-                // ═══════════════════════════════════════════════════════════
+                // ═══════════════════════════════════════════════════
+                // SCROLL LISTENER
+                // ═══════════════════════════════════════════════════
                 let reposicionando = false;
                 let scrollRAF = null;
                 let lockoutTimer = null;
 
                 galeria.addEventListener('scroll', () => {
 
-                    // ── 1. BOUNDARY CHECK (síncrono, cada evento, sin throttle) ──
-                    // Si entramos en SET_A o SET_C, saltar inmediatamente a SET_B.
+                    // ── 1. BOUNDARY CHECK (síncrono, cada evento) ──
                     if (!reposicionando) {
-                        const s = galeria.scrollLeft;
-                        if (s < anchoSet || s >= anchoSet * 2) {
+                        const idx = indiceCentral();
+                        if (idx < totalOriginales || idx >= totalOriginales * 2) {
                             reposicionando = true;
-                            ejecutarSalto(galeria, s, anchoSet);
-
-                            // Lockout: no permitir más saltos hasta que el scroll
-                            // se detenga por completo (previene oscilación por
-                            // snap-correction que dispara más scroll events).
-                            if (lockoutTimer) clearTimeout(lockoutTimer);
-                            lockoutTimer = setTimeout(() => {
-                                // Verificar que realmente estamos en SET_B
-                                const pos = galeria.scrollLeft;
-                                if (pos < anchoSet || pos >= anchoSet * 2) {
-                                    // Aún en zona de clones: un salto más
-                                    ejecutarSalto(galeria, pos, anchoSet);
-                                }
-                                reposicionando = false;
-                            }, 200);
+                            try {
+                                ejecutarSalto();
+                            } finally {
+                                // Lockout hasta que el scroll se detenga
+                                if (lockoutTimer) clearTimeout(lockoutTimer);
+                                lockoutTimer = setTimeout(() => {
+                                    // Safety: si aún en clones, saltar de nuevo
+                                    const finalIdx = indiceCentral();
+                                    if (finalIdx < totalOriginales || finalIdx >= totalOriginales * 2) {
+                                        ejecutarSalto();
+                                    }
+                                    reposicionando = false;
+                                }, 200);
+                            }
                         }
                     }
 
-                    // ── 2. VISUAL UPDATE (rAF throttled, no bloquea el hilo) ──
+                    // ── 2. VISUAL UPDATE (rAF throttled) ──
                     if (scrollRAF) cancelAnimationFrame(scrollRAF);
                     scrollRAF = requestAnimationFrame(actualizarCentro);
 
                 }, { passive: true });
 
-                // Recalcular en cambio de orientación o resize
+                // Resize handler
                 window.addEventListener('resize', () => {
-                    anchoSet = calcularAnchoSetMovil();
-                    if (anchoSet === 0) return;
                     galeria.classList.add('saltando');
                     galeria.style.scrollSnapType = 'none';
-                    galeria.scrollLeft = anchoSet;
+                    scrollearAItem(totalOriginales);
                     void galeria.offsetHeight;
                     galeria.classList.remove('saltando');
                     requestAnimationFrame(() => {
