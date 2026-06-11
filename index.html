@@ -705,6 +705,10 @@
         transform-origin: center center;
         will-change: transform, opacity;
 
+        /* Borde morado siempre brillante en móvil */
+        border-color: var(--acento) !important;
+        box-shadow: 0 0 6px rgba(204, 0, 204, 0.35);
+
         /* Bloquea clics en las imágenes laterales */
         pointer-events: none;
     }
@@ -728,6 +732,12 @@
         opacity: 1;
         z-index: 10;
         pointer-events: auto;
+        box-shadow: 0 0 12px rgba(204, 0, 204, 0.5);
+    }
+
+    /* Durante el salto del loop infinito: sin transiciones para evitar parpadeo */
+    .galeria-horizontal.saltando .item-scroll {
+        transition: none !important;
     }
 }
     </style>
@@ -1592,24 +1602,32 @@
                         // 1. Feedback visual: marcar el item central
                         actualizarCentro();
 
-                        // 2. Loop infinito en tiempo real
+                        // 2. Loop infinito en tiempo real (100% síncrono para evitar parpadeo)
                         if (reposicionando) return;
                         const s = galeria.scrollLeft;
 
                         // [SET_A: 0..anchoSet] [SET_B: anchoSet..2*anchoSet] [SET_C: 2*anchoSet+]
                         if (s < anchoSet || s >= anchoSet * 2) {
                             reposicionando = true;
+
+                            // 1. Matar transiciones CSS para que el salto sea invisible
+                            galeria.classList.add('saltando');
                             galeria.style.scrollSnapType = 'none';
 
-                            if (s < anchoSet) {
-                                galeria.scrollLeft = s + anchoSet;
-                            } else {
-                                galeria.scrollLeft = s - anchoSet;
-                            }
+                            // 2. Saltar al equivalente en SET_B
+                            galeria.scrollLeft = s < anchoSet ? s + anchoSet : s - anchoSet;
 
-                            // Esperar 1 frame para que el browser aplique el salto
+                            // 3. Re-habilitar snap y marcar el item correcto (todo síncrono)
+                            galeria.style.scrollSnapType = 'x mandatory';
+                            actualizarCentro();
+
+                            // 4. Forzar reflow: el browser pinta el estado final SIN transiciones
+                            void galeria.offsetHeight;
+
+                            // 5. Re-habilitar transiciones
+                            galeria.classList.remove('saltando');
+
                             requestAnimationFrame(() => {
-                                galeria.style.scrollSnapType = 'x mandatory';
                                 reposicionando = false;
                             });
                         }
