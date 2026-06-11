@@ -677,25 +677,29 @@
 /* --- OPTIMIZACIÓN DE GALERÍAS EN MÓVIL --- */
 @media (max-width: 768px) {
     .galeria-horizontal {
-        scroll-snap-type: x mandatory;
+        /* SIN scroll-snap: el snapping se maneja 100% por JS para evitar rebotes */
+        scroll-snap-type: none !important;
         padding: 0 15vw !important;
         gap: 12px !important;
-        scroll-behavior: smooth;
-        align-items: center; /* Centra verticalmente items de distintas alturas */
+        scroll-behavior: auto; /* Auto por defecto; el JS controla cuándo usar smooth */
+        align-items: center;
+        -webkit-overflow-scrolling: touch;
     }
 
     .item-scroll {
         flex: 0 0 70vw !important;
-        height: auto !important; /* Libera la altura fija para que la imagen NO se corte */
-        scroll-snap-align: center;
-        scroll-snap-stop: always;
-        
-        /* Inician más pequeñas y opacas */
-        transform: scale(0.78);
-        opacity: 0.4;
-        transition: transform 0.2s ease, opacity 0.2s ease;
+        height: auto !important;
+        /* Sin scroll-snap-align — el JS maneja todo el centrado */
 
-        /* Bloquea clics en las imágenes laterales para evitar el bug visual */
+        /* Inician más pequeñas y opacas */
+        transform: scale(0.85);
+        opacity: 0.45;
+        transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), 
+                    opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        transform-origin: center center;
+        will-change: transform, opacity;
+
+        /* Bloquea clics en las imágenes laterales */
         pointer-events: none;
     }
 
@@ -716,10 +720,10 @@
 
     /* La imagen central se ilumina, agranda y recupera la interactividad */
     .item-scroll.activa {
-        transform: scale(1.05);
+        transform: scale(1);
         opacity: 1;
         z-index: 10;
-        pointer-events: auto; /* Solo la imagen central puede recibir clics */
+        pointer-events: auto;
     }
 }
     </style>
@@ -1499,7 +1503,7 @@
             });
 
         } else {
-            // === MÓVIL: Carrusel infinito con snap + swipe nativo ===
+            // === MÓVIL: Carrusel infinito SIN scroll-snap (100% controlado por JS) ===
             const itemsOriginales = Array.from(galeria.querySelectorAll('.item-scroll'));
             const totalOriginales = itemsOriginales.length;
             if (totalOriginales === 0) return;
@@ -1531,79 +1535,165 @@
                 return ancho;
             }
 
+            // Calcula la posición de scroll para centrar un item dado
+            function getScrollParaCentrar(item) {
+                const galeriaRect = galeria.getBoundingClientRect();
+                const itemRect = item.getBoundingClientRect();
+                const offset = (itemRect.left - galeriaRect.left) + galeria.scrollLeft;
+                return offset - (galeriaRect.width / 2) + (itemRect.width / 2);
+            }
+
+            // Encuentra el item más cercano al centro
+            function encontrarItemCentral() {
+                const galeriaRect = galeria.getBoundingClientRect();
+                const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
+                const todosItems = galeria.querySelectorAll('.item-scroll');
+                let mejorItem = null;
+                let mejorDistancia = Infinity;
+
+                todosItems.forEach(item => {
+                    const itemRect = item.getBoundingClientRect();
+                    const centroItem = itemRect.left + itemRect.width / 2;
+                    const distancia = Math.abs(centroGaleria - centroItem);
+                    
+                    if (distancia < mejorDistancia) {
+                        mejorDistancia = distancia;
+                        mejorItem = item;
+                    }
+                });
+                return mejorItem;
+            }
+
+            // Actualiza la clase .activa en el item más cercano al centro
+            function actualizarCentro() {
+                const todosItems = galeria.querySelectorAll('.item-scroll');
+                const mejorItem = encontrarItemCentral();
+
+                todosItems.forEach(item => item.classList.remove('activa'));
+                if (mejorItem) mejorItem.classList.add('activa');
+            }
+
             // Esperamos un frame para que el layout esté listo
             requestAnimationFrame(() => {
                 let anchoSet = calcularAnchoSetMovil();
                 
-                // Desactivamos snap momentáneamente para posicionar sin conflicto
-                galeria.style.scrollSnapType = 'none';
-                galeria.style.scrollBehavior = 'auto';
+                // Posicionamos el scroll en el set del medio (los originales) — sin animación
                 galeria.scrollLeft = anchoSet;
-                
-                // Reactivamos snap después de posicionar
-                requestAnimationFrame(() => {
-                    galeria.style.scrollSnapType = 'x mandatory';
-                    galeria.style.scrollBehavior = 'smooth';
-                });
+                actualizarCentro();
 
-                // Reposicionamiento infinito
-                let reposicionando = false;
+                // --- SISTEMA DE SNAP MANUAL POR TOUCH ---
+                let touchStartX = 0;
+                let touchStartScroll = 0;
+                let isTouching = false;
+                let lastTouchTime = 0;
+
+                galeria.addEventListener('touchstart', (e) => {
+                    isTouching = true;
+                    touchStartX = e.touches[0].clientX;
+                    touchStartScroll = galeria.scrollLeft;
+                    lastTouchTime = Date.now();
+                }, { passive: true });
+
+                galeria.addEventListener('touchend', (e) => {
+                    if (!isTouching) return;
+                    isTouching = false;
+
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const deltaX = touchStartX - touchEndX;
+                    const deltaTime = Date.now() - lastTouchTime;
+                    const velocidad = Math.abs(deltaX) / deltaTime; // px/ms
+
+                    // Determinar item de destino
+                    const todosItems = Array.from(galeria.querySelectorAll('.item-scroll'));
+                    const galeriaRect = galeria.getBoundingClientRect();
+                    const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
+
+                    // Si el swipe fue rápido o suficientemente largo, avanzar/retroceder un item
+                    if (Math.abs(deltaX) > 30 && (velocidad > 0.3 || Math.abs(deltaX) > galeriaRect.width * 0.15)) {
+                        // Encontrar el item activo actual
+                        const itemActual = encontrarItemCentral();
+                        const indexActual = todosItems.indexOf(itemActual);
+                        
+                        let targetIndex;
+                        if (deltaX > 0) {
+                            // Swipe izquierda → siguiente item
+                            targetIndex = Math.min(indexActual + 1, todosItems.length - 1);
+                        } else {
+                            // Swipe derecha → item anterior
+                            targetIndex = Math.max(indexActual - 1, 0);
+                        }
+                        
+                        const targetItem = todosItems[targetIndex];
+                        const targetScroll = getScrollParaCentrar(targetItem);
+                        
+                        galeria.scrollTo({
+                            left: targetScroll,
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        // Swipe corto/lento → snap al más cercano al centro
+                        const mejorItem = encontrarItemCentral();
+                        if (mejorItem) {
+                            const targetScroll = getScrollParaCentrar(mejorItem);
+                            galeria.scrollTo({
+                                left: targetScroll,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                }, { passive: true });
+
+                // --- DETECCIÓN DEL CENTRO DURANTE SCROLL (visual feedback) ---
+                let scrollRAF = null;
                 galeria.addEventListener('scroll', () => {
-                    if (reposicionando) return;
+                    if (scrollRAF) cancelAnimationFrame(scrollRAF);
+                    scrollRAF = requestAnimationFrame(() => {
+                        actualizarCentro();
+                    });
+                }, { passive: true });
+
+                // --- REPOSICIONAMIENTO INFINITO (loop sin glitch) ---
+                let reposicionando = false;
+                
+                function verificarLimites() {
+                    if (reposicionando || isTouching) return;
                     const scrollActual = galeria.scrollLeft;
                     
-                    if (scrollActual < anchoSet * 0.25 || scrollActual > anchoSet * 1.75) {
+                    // Umbrales más conservadores para que el usuario nunca vea el borde
+                    if (scrollActual < anchoSet * 0.4 || scrollActual > anchoSet * 1.6) {
                         reposicionando = true;
-                        // Desactivamos snap para el salto instantáneo
-                        galeria.style.scrollSnapType = 'none';
-                        galeria.style.scrollBehavior = 'auto';
                         
-                        if (scrollActual < anchoSet * 0.25) {
+                        if (scrollActual < anchoSet * 0.4) {
                             galeria.scrollLeft += anchoSet;
                         } else {
                             galeria.scrollLeft -= anchoSet;
                         }
                         
-                        // Reactivamos snap después del salto
+                        // Esperar a que el salto se aplique visualmente antes de desbloquear
                         requestAnimationFrame(() => {
-                            galeria.style.scrollSnapType = 'x mandatory';
-                            galeria.style.scrollBehavior = 'smooth';
-                            reposicionando = false;
+                            requestAnimationFrame(() => {
+                                reposicionando = false;
+                                actualizarCentro();
+                            });
                         });
-                    }
-                });
-
-                // Detección del item central para efecto de escala
-                function detectarCentro() {
-                    const galeriaRect = galeria.getBoundingClientRect();
-                    const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
-                    const todosItems = galeria.querySelectorAll('.item-scroll');
-                    let mejorItem = null;
-                    let mejorDistancia = Infinity;
-
-                    todosItems.forEach(item => {
-                        const itemRect = item.getBoundingClientRect();
-                        const centroItem = itemRect.left + itemRect.width / 2;
-                        const distancia = Math.abs(centroGaleria - centroItem);
-                        
-                        if (distancia < mejorDistancia) {
-                            mejorDistancia = distancia;
-                            mejorItem = item;
-                        }
-                        item.classList.remove('activa');
-                    });
-
-                    if (mejorItem) {
-                        mejorItem.classList.add('activa');
                     }
                 }
 
-                galeria.addEventListener('scroll', detectarCentro, { passive: true });
-                detectarCentro(); // Estado inicial
+                // Verificar límites después de que el scroll se detenga (no durante)
+                let scrollEndTimer = null;
+                galeria.addEventListener('scroll', () => {
+                    if (scrollEndTimer) clearTimeout(scrollEndTimer);
+                    scrollEndTimer = setTimeout(() => {
+                        verificarLimites();
+                    }, 150); // Espera 150ms después del último evento scroll
+                }, { passive: true });
 
                 // Recalcular en resize
                 window.addEventListener('resize', () => {
                     anchoSet = calcularAnchoSetMovil();
+                    // Reposicionar al centro del set de originales
+                    galeria.scrollLeft = anchoSet;
+                    actualizarCentro();
                 });
             });
         }
