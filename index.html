@@ -1517,13 +1517,12 @@
             });
 
         } else {
-            // === MÓVIL: Carrusel infinito con scroll-snap nativo de iOS ===
-            // El snapping lo maneja el navegador. JS solo: detecta centro + loop infinito.
+            // === MÓVIL: Carrusel infinito con scroll-snap nativo ===
             const itemsOriginales = Array.from(galeria.querySelectorAll('.item-scroll'));
             const totalOriginales = itemsOriginales.length;
             if (totalOriginales === 0) return;
 
-            // Clonamos items para crear 3 sets: [clon-antes] [originales] [clon-después]
+            // Clonamos items para crear 3 sets: [SET_A: clones] [SET_B: originales] [SET_C: clones]
             const clonesAntes = [];
             const clonesDespues = [];
             itemsOriginales.forEach(item => {
@@ -1539,18 +1538,17 @@
             clonesAntes.forEach(clon => galeria.insertBefore(clon, primerItem));
             clonesDespues.forEach(clon => galeria.appendChild(clon));
 
-            // Calcula el "stride" de un set: distancia entre item[0] e item[N] (siguiente set)
+            // Cálculo PRECISO del stride usando offsetLeft:
+            // Mide la distancia real entre el primer item de SET_A y el primer item de SET_B.
+            // Una sola medición DOM = cero errores de redondeo acumulados.
             function calcularAnchoSetMovil() {
-                let ancho = 0;
-                const gap = parseInt(getComputedStyle(galeria).gap) || 12;
-                for (let i = 0; i < totalOriginales; i++) {
-                    const item = galeria.children[i];
-                    if (item) ancho += item.offsetWidth + gap;
-                }
-                return ancho;
+                const primerSetA = galeria.children[0];
+                const primerSetB = galeria.children[totalOriginales];
+                if (!primerSetA || !primerSetB) return 0;
+                return primerSetB.offsetLeft - primerSetA.offsetLeft;
             }
 
-            // Actualiza la clase .activa en el item más cercano al centro del viewport
+            // Marca el item más cercano al centro del viewport con .activa
             function actualizarCentro() {
                 const galeriaRect = galeria.getBoundingClientRect();
                 const centroGaleria = galeriaRect.left + galeriaRect.width / 2;
@@ -1572,15 +1570,27 @@
                 if (mejorItem) mejorItem.classList.add('activa');
             }
 
+            // Ejecuta el salto de reposicionamiento
+            function ejecutarSalto(galeria, scrollActual, anchoSet) {
+                galeria.classList.add('saltando');
+                galeria.style.scrollSnapType = 'none';
+                galeria.scrollLeft = scrollActual < anchoSet
+                    ? scrollActual + anchoSet
+                    : scrollActual - anchoSet;
+                galeria.style.scrollSnapType = 'x mandatory';
+                actualizarCentro();
+                void galeria.offsetHeight; // Forzar reflow con transiciones deshabilitadas
+                galeria.classList.remove('saltando');
+            }
+
             // Esperamos a que el layout esté listo
             requestAnimationFrame(() => {
                 let anchoSet = calcularAnchoSetMovil();
+                if (anchoSet === 0) return;
 
-                // Posición inicial: inicio del set de originales, sin animación
+                // Posición inicial: primer item de SET_B centrado
                 galeria.style.scrollSnapType = 'none';
                 galeria.scrollLeft = anchoSet;
-
-                // Re-habilitar snap después de que el salto se pinte
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         galeria.style.scrollSnapType = 'x mandatory';
@@ -1588,62 +1598,57 @@
                     });
                 });
 
-                // --- DETECCIÓN DEL CENTRO + LOOP INFINITO EN TIEMPO REAL ---
-                // Un solo listener de scroll con rAF hace ambas cosas:
-                // 1. Actualiza .activa en el item más cercano al centro
-                // 2. Reposiciona el scroll al set central si entramos en zona de clones
-                //    (funciona MIENTRAS el dedo está presionado, no solo al soltar)
+                // ═══════════════════════════════════════════════════════════
+                // SCROLL LISTENER: boundary check SÍNCRONO + visual rAF
+                // ═══════════════════════════════════════════════════════════
                 let reposicionando = false;
                 let scrollRAF = null;
+                let lockoutTimer = null;
 
                 galeria.addEventListener('scroll', () => {
-                    if (scrollRAF) cancelAnimationFrame(scrollRAF);
-                    scrollRAF = requestAnimationFrame(() => {
-                        // 1. Feedback visual: marcar el item central
-                        actualizarCentro();
 
-                        // 2. Loop infinito en tiempo real (100% síncrono para evitar parpadeo)
-                        if (reposicionando) return;
+                    // ── 1. BOUNDARY CHECK (síncrono, cada evento, sin throttle) ──
+                    // Si entramos en SET_A o SET_C, saltar inmediatamente a SET_B.
+                    if (!reposicionando) {
                         const s = galeria.scrollLeft;
-
-                        // [SET_A: 0..anchoSet] [SET_B: anchoSet..2*anchoSet] [SET_C: 2*anchoSet+]
                         if (s < anchoSet || s >= anchoSet * 2) {
                             reposicionando = true;
+                            ejecutarSalto(galeria, s, anchoSet);
 
-                            // 1. Matar transiciones CSS para que el salto sea invisible
-                            galeria.classList.add('saltando');
-                            galeria.style.scrollSnapType = 'none';
-
-                            // 2. Saltar al equivalente en SET_B
-                            galeria.scrollLeft = s < anchoSet ? s + anchoSet : s - anchoSet;
-
-                            // 3. Re-habilitar snap y marcar el item correcto (todo síncrono)
-                            galeria.style.scrollSnapType = 'x mandatory';
-                            actualizarCentro();
-
-                            // 4. Forzar reflow: el browser pinta el estado final SIN transiciones
-                            void galeria.offsetHeight;
-
-                            // 5. Re-habilitar transiciones
-                            galeria.classList.remove('saltando');
-
-                            requestAnimationFrame(() => {
+                            // Lockout: no permitir más saltos hasta que el scroll
+                            // se detenga por completo (previene oscilación por
+                            // snap-correction que dispara más scroll events).
+                            if (lockoutTimer) clearTimeout(lockoutTimer);
+                            lockoutTimer = setTimeout(() => {
+                                // Verificar que realmente estamos en SET_B
+                                const pos = galeria.scrollLeft;
+                                if (pos < anchoSet || pos >= anchoSet * 2) {
+                                    // Aún en zona de clones: un salto más
+                                    ejecutarSalto(galeria, pos, anchoSet);
+                                }
                                 reposicionando = false;
-                            });
+                            }, 200);
                         }
-                    });
+                    }
+
+                    // ── 2. VISUAL UPDATE (rAF throttled, no bloquea el hilo) ──
+                    if (scrollRAF) cancelAnimationFrame(scrollRAF);
+                    scrollRAF = requestAnimationFrame(actualizarCentro);
+
                 }, { passive: true });
 
                 // Recalcular en cambio de orientación o resize
                 window.addEventListener('resize', () => {
                     anchoSet = calcularAnchoSetMovil();
+                    if (anchoSet === 0) return;
+                    galeria.classList.add('saltando');
                     galeria.style.scrollSnapType = 'none';
                     galeria.scrollLeft = anchoSet;
+                    void galeria.offsetHeight;
+                    galeria.classList.remove('saltando');
                     requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            galeria.style.scrollSnapType = 'x mandatory';
-                            actualizarCentro();
-                        });
+                        galeria.style.scrollSnapType = 'x mandatory';
+                        actualizarCentro();
                     });
                 });
             });
