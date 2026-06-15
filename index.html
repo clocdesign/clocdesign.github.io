@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYS.DANIEL.LUGO // CLOC</title>
     <head>
     <meta charset="UTF-8">
@@ -646,6 +646,8 @@
             .play-overlay { width: 50px; height: 50px; }
             .play-triangle { border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 14px solid var(--acento); }
         }
+} /* Cierre de @media (max-width: 768px) de L503 */
+
 .btn-arriba {
             position: fixed;
             bottom: 40px;
@@ -737,6 +739,18 @@
         z-index: 10;
         pointer-events: auto;
         box-shadow: 0 0 14px rgba(204, 0, 204, 0.5);
+    }
+
+    /* Videos en móvil: necesitan dimensiones explícitas porque el iframe es absolute */
+    .item-scroll.item-video {
+        position: relative;
+        aspect-ratio: 16/9 !important;
+        height: auto !important;
+    }
+    .item-scroll.item-video .iframe-bg {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
     }
 
     .galeria-horizontal.saltando .item-scroll {
@@ -857,13 +871,13 @@
                         </div>
                     </div>
                     <div class="galeria-horizontal">
-                        <div class="item-scroll ar-cuadrado"><img src="img/Proyecto-YoucoinArtboard-1.avif" alt="Youcoin 1" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPortfolio1.avif" alt="Youcoin 5" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/Proyecto-YoucoinArtboard-2.avif" alt="Youcoin 2" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-cuadrado"><img src="img/Proyecto-YoucoinArtboard-6.avif" alt="Youcoin 6" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/Proyecto-YoucoinArtboard-3.avif" alt="Youcoin 3" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPortfolio2.avif" alt="Infographic 2" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/InfographicPortfolio4.avif" alt="Infographic 4" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y1.avif" alt="Youcoin 1" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y2.avif" alt="Youcoin 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y5.avif" alt="Youcoin 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y3.avif" alt="Youcoin 6" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y6.avif" alt="Youcoin 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y4.avif" alt="Infographic 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y7.avif" alt="Infographic 4" loading="lazy" decoding="async"></div>
                     </div>
 
                     <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 35px;">
@@ -1257,7 +1271,6 @@
                         if (idx !== -1) {
                             element.innerHTML = text.substring(0, idx) + '<span>' + text.substring(idx) + '</span>';
                         } else {
-                            // EL MATA-VIUDAS: Reemplaza el último espacio por un &nbsp;
                             element.innerHTML = text.replace(/ ([^ ]*)$/, '&nbsp;$1'); 
                         }
                     }
@@ -1274,30 +1287,27 @@
                 const contenido = this.parentElement.nextElementSibling;
                 const estaActivo = this.classList.contains('activo');
 
-                document.querySelectorAll('.btn-acordeon').forEach(otroBtn => {
-                    otroBtn.classList.remove('activo');
-                    otroBtn.querySelector('.icono-acordeon').innerText = '+';
-                    const otroContenido = otroBtn.parentElement.nextElementSibling;
-                    otroContenido.style.maxHeight = null;
-                    
-                    const targets = otroContenido.querySelectorAll('.type-target');
+                if (estaActivo) {
+                    // Cerrar esta sección
+                    this.classList.remove('activo');
+                    this.querySelector('.icono-acordeon').innerText = '+';
+                    contenido.style.maxHeight = null;
+
+                    const targets = contenido.querySelectorAll('.type-target');
                     targets.forEach(t => {
                         if(t.delayTimeout) clearTimeout(t.delayTimeout);
                         if(t.typeTimeout) clearTimeout(t.typeTimeout);
                         const originalText = t.getAttribute('data-text');
-                        
                         const idx = originalText.indexOf('//');
                         if (idx !== -1) {
                             t.innerHTML = originalText.substring(0, idx) + '<span>' + originalText.substring(idx) + '</span>';
                         } else {
-                            // EL MATA-VIUDAS para el acordeón
                             t.innerHTML = originalText.replace(/ ([^ ]*)$/, '&nbsp;$1');
                         }
                         t.classList.add('typing-done'); 
                     });
-                });
-
-                if (!estaActivo) {
+                } else {
+                    // Abrir esta sección (sin cerrar las demás)
                     this.classList.add('activo');
                     this.querySelector('.icono-acordeon').innerText = '+';
                     
