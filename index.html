@@ -742,11 +742,14 @@
     }
 
     /* Videos en móvil: necesitan dimensiones explícitas porque el iframe es absolute */
+    /* Respetan su aspect-ratio original (ar-cuadrado, ar-panoramico, ar-mix) */
     .item-scroll.item-video {
         position: relative;
-        aspect-ratio: 16/9 !important;
         height: auto !important;
     }
+    .item-scroll.item-video.ar-cuadrado { aspect-ratio: 1/1 !important; }
+    .item-scroll.item-video.ar-panoramico { aspect-ratio: 16/9 !important; }
+    .item-scroll.item-video.ar-mix { aspect-ratio: 904/1024 !important; }
     .item-scroll.item-video .iframe-bg {
         position: absolute;
         top: 0; left: 0;
@@ -873,9 +876,9 @@
                     <div class="galeria-horizontal">
                         <div class="item-scroll ar-retrato"><img src="img/y1.avif" alt="Youcoin 1" loading="lazy" decoding="async"></div>
                         <div class="item-scroll ar-retrato"><img src="img/y2.avif" alt="Youcoin 5" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/y5.avif" alt="Youcoin 2" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/y3.avif" alt="Youcoin 6" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/y6.avif" alt="Youcoin 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y6.avif" alt="Youcoin 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y5.avif" alt="Youcoin 6" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/y3.avif" alt="Youcoin 3" loading="lazy" decoding="async"></div>
                         <div class="item-scroll ar-retrato"><img src="img/y4.avif" alt="Infographic 2" loading="lazy" decoding="async"></div>
                         <div class="item-scroll ar-retrato"><img src="img/y7.avif" alt="Infographic 4" loading="lazy" decoding="async"></div>
                     </div>
@@ -888,17 +891,13 @@
                         </div>
                     </div>
                     <div class="galeria-horizontal">
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic9April.avif" alt="Tashi 1" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/InfographicPort1.avif" alt="Tashi 2" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic5April.avif" alt="Tashi 3" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic19an.avif" alt="Tashi 3" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-cuadrado"><img src="img/InfographicPort2 (1).avif" alt="Tashi 4" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic1.0April.avif" alt="Tashi 5" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic3April.avif" alt="Tashi 6" loading="lazy" decoding="async"></div>
-                
-        <div class="item-scroll ar-panoramico"><img src="img/image_2026-01-30_18-32-56.avif" alt="Tashi 6" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic4.0April.avif" alt="Tashi 7" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic1.00April.avif" alt="Tashi 7" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/t1.avif" alt="Tashi 1" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/t2.avif" alt="Tashi 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/t7.avif" alt="Tashi 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/t6.avif" alt="Tashi 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/t3.avif" alt="Tashi 4" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/t4.avif" alt="Tashi 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/t5.avif" alt="Tashi 5" loading="lazy" decoding="async"></div>
                     </div>
 
                     <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 35px;">
@@ -909,14 +908,12 @@
                         </div>
                     </div>
                     <div class="galeria-horizontal">
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic3Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/Untitled-4.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic12Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-cuadrado"><img src="img/Untitled-2.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Posted_Infographic11Au.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/image_2025-08-12_03-30-03.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic2Au (2).avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Infographic2Sep.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/z1.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-retrato"><img src="img/z2.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/z3.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/z4.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/z5.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                       
                     </div>
 
                 </div>
@@ -939,26 +936,17 @@
                         </div>
                     </div>
                     <div class="galeria-horizontal">
-                        <div class="item-scroll ar-panoramico"><img src="img/3e6af7236285489.68e84f1074ccb.avif" alt="Placeholder" decoding="async"></div>
 
-                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126044153">
+ <div class="item-scroll ar-mix item-video" data-video-type="vimeo" data-video-id="1126044153">
                             <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1126044153?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
 
-                        <div class="item-scroll ar-cuadrado"><img src="img/Untitled-2 (2).avif" alt="Placeholder" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/c254fc236285489.68e86466324ae.avif" alt="Placeholder" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/dba42c236285489.68e875406b5ad (1).avif" alt="Placeholder" decoding="async"></div>
-
-                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126066014">
-                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1126066014?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src=""  frameborder="0" allow="autoplay; fullscreen"></iframe>
-                        </div>
-
-                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1126095799">
-                            <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1126095799?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
-                        </div>
-
-                        <div class="item-scroll ar-panoramico"><img src="img/06c3e1236285489.68e8b5de7c101.avif" alt="Placeholder" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico"><img src="img/Untitled-1.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w1.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w2.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w3.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w4.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w6.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w7.avif" alt="Placeholder" decoding="async"></div>
                     </div>
 
                     <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 35px;">
@@ -969,10 +957,11 @@
                         </div>
                     </div>
                     <div class="galeria-horizontal">
-<div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-8.avif" alt="Placeholder" decoding="async"></div>
-                        <div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1182352140">
+
+<div class="item-scroll ar-mix item-video" data-video-type="vimeo" data-video-id="1182352140">
                             <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1182352140?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
+                        <div class="item-scroll ar-mix"><img src="img/RagAndMopArtboard-8.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="IMG/RagAndMopArtboard-1.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-2.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/RagAndMopArtboard-3.avif" alt="Placeholder" decoding="async"></div>
@@ -990,12 +979,11 @@
                     </div>
                     <div class="galeria-horizontal">
                        
-                        
-<div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-8.avif" alt="Placeholder" decoding="async"></div>
-<div class="item-scroll ar-panoramico item-video" data-video-type="vimeo" data-video-id="1189979958">
+                        <div class="item-scroll ar-mix item-video" data-video-type="vimeo" data-video-id="1189979958">
                             <iframe class="iframe-bg" data-src="https://player.vimeo.com/video/1189979958?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1" src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
-<div class="item-scroll ar-panoramico"><img src="IMG/NumbursArtboard-1.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/NumbursArtboard-8.avif" alt="Placeholder" decoding="async"></div>
+                        <div class="item-scroll ar-panoramico"><img src="IMG/NumbursArtboard-1.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-2.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-3.avif" alt="Placeholder" decoding="async"></div>
                         <div class="item-scroll ar-panoramico"><img src="img/NumbursArtboard-5.avif" alt="Placeholder" decoding="async"></div>
@@ -1481,62 +1469,38 @@
             // Drag con el mouse (solo escritorio)
             let isDown = false;
             let startX, scrollLeftInicio;
-            let dragHappened = false;
 
             galeria.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Bloquear native drag del browser sobre imágenes
                 isDown = true;
-                dragHappened = false;
                 galeria.style.scrollBehavior = 'auto';
                 startX = e.pageX - galeria.offsetLeft;
                 scrollLeftInicio = galeria.scrollLeft;
                 galeria.style.cursor = 'grabbing';
             });
 
-            galeria.addEventListener('mouseleave', () => {
+            // Bloquear drag nativo de imágenes (backup)
+            galeria.addEventListener('dragstart', (e) => e.preventDefault());
+
+            // mouseup en document para que funcione aunque el cursor salga de la galería
+            document.addEventListener('mouseup', () => {
                 if (isDown) {
                     isDown = false;
                     galeria.style.cursor = 'grab';
                 }
             });
 
-            galeria.addEventListener('mouseup', () => {
-                isDown = false;
-                galeria.style.cursor = 'grab';
-            });
-
-            galeria.addEventListener('mousemove', (e) => {
+            document.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 e.preventDefault();
                 const x = e.pageX - galeria.offsetLeft;
                 const walk = (x - startX) * 2;
-                if (Math.abs(walk) > 5) dragHappened = true;
                 galeria.scrollLeft = scrollLeftInicio - walk;
             });
-
-            // Evitar que los clics se disparen después de un drag
-            galeria.addEventListener('click', (e) => {
-                if (dragHappened) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    dragHappened = false;
-                }
-            }, true);
 
             // Recalcular en resize
             window.addEventListener('resize', () => {
                 anchoSet = calcularAnchoSet();
-            });
-
-            // Vincular clics de clones al lightbox de los originales
-            const todosLosItems = galeria.querySelectorAll('.item-scroll');
-            todosLosItems.forEach((item) => {
-                item.addEventListener('click', function(e) {
-                    if (dragHappened) return;
-                    // Abrimos el lightbox usando la galería completa
-                    if (typeof openLightbox === 'function') {
-                        openLightbox(galeria, this);
-                    }
-                });
             });
 
         } else {
@@ -1575,9 +1539,24 @@
                     const centro = rect.left + rect.width / 2;
                     const d = Math.abs(centroGaleria - centro);
                     if (d < mejorDist) { mejorDist = d; mejorItem = items[i]; }
-                    items[i].classList.remove('activa');
                 }
-                if (mejorItem) mejorItem.classList.add('activa');
+
+                // Solo cambiar el estado si el mejor candidato es claramente el central
+                // Esto evita que una imagen lateral reciba 'activa' brevemente durante el scroll
+                if (mejorItem) {
+                    const mejorRect = mejorItem.getBoundingClientRect();
+                    const umbral = mejorRect.width * 0.4;
+                    const distAlCentro = Math.abs(centroGaleria - (mejorRect.left + mejorRect.width / 2));
+
+                    for (let i = 0; i < items.length; i++) {
+                        items[i].classList.remove('activa');
+                    }
+
+                    // Solo marcar como activa si realmente está cerca del centro
+                    if (distAlCentro < umbral) {
+                        mejorItem.classList.add('activa');
+                    }
+                }
             }
 
             // Encuentra el índice del item más cercano al centro
