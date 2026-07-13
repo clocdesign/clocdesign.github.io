@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SYS.DANIEL.LUGO // CLOC</title>
     <head>
     <meta charset="UTF-8">
@@ -110,7 +110,11 @@
 
         .hud-element {
             position: fixed; font-family: 'Share Tech Mono', monospace; color: var(--acento); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; z-index: 1000; pointer-events: none;
+            transition: opacity 0.4s ease;
         }
+
+        /* Hamburger y menú móvil: ocultos en desktop */
+        .hamburger-btn, .mobile-menu-panel, .mobile-menu-overlay { display: none; }
         .hud-top-left { top: 75px; left: 20px; border-left: 2px solid var(--acento); padding-left: 10px; }
         .hud-bottom-right { bottom: 20px; right: 20px; text-align: right; }
         .hud-bottom-left { bottom: 20px; left: 20px; }
@@ -501,10 +505,6 @@
         }
         /* RESPONSIVO MÓVIL */
         @media (max-width: 768px) {
-/* RESPONSIVO MÓVIL */
-       /* RESPONSIVO MÓVIL */
-        /* RESPONSIVO MÓVIL */
-        @media (max-width: 768px) {
             
             /* --- 1. ALINEACIÓN HORIZONTAL: BOTÓN IZQ, LOGO CENTRO --- */
             
@@ -554,7 +554,7 @@
                 top: 45px;
                 left: 15px;
                 transform: translateY(-50%);
-                z-index: 10006;
+                z-index: 99999 !important;
                 background: rgba(204, 0, 204, 0.15);
                 border: 1px solid var(--acento);
                 color: var(--texto);
@@ -569,6 +569,7 @@
                 box-shadow: 0 0 10px rgba(204, 0, 204, 0.2);
                 transition: all 0.3s ease;
                 padding: 0;
+                pointer-events: auto !important;
             }
             .hamburger-btn span {
                 display: block;
@@ -587,7 +588,26 @@
                 transform: translateY(-7px) rotate(-45deg);
             }
 
-            /* --- Panel lateral deslizante --- */
+                       .mobile-menu-overlay {
+                display: block !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(3px);
+                z-index: 99997 !important;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            .mobile-menu-overlay.abierto {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto !important;
+            }
+
             .mobile-menu-panel {
                 display: block !important;
                 position: fixed;
@@ -599,14 +619,14 @@
                 background: rgba(2, 2, 2, 0.97);
                 backdrop-filter: blur(15px);
                 border-right: 1px solid var(--acento);
-                z-index: 10005;
+                z-index: 99998 !important;
                 transform: translateX(-100%);
                 transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
                 padding: 100px 30px 40px;
                 box-shadow: 5px 0 30px rgba(204, 0, 204, 0.1);
             }
             .mobile-menu-panel.abierto {
-                transform: translateX(0);
+                transform: translateX(0) !important;
             }
             .mobile-menu-panel a {
                 display: block;
@@ -691,11 +711,11 @@
             .texto-alto-contraste p { font-size: 1rem; }
             .about-visual-content { padding: 0; }
             .placeholder-avanzado { aspect-ratio: 1/1; max-width: 100%; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); transform: none !important; }
-            .contacto-flex { flex-direction: column; align-items: center; gap: 30px; text-align: center; }
-            .contacto-izq { display: flex; flex-direction: column; align-items: center; width: 100%; }
-            .botones-contacto { flex-wrap: wrap; justify-content: center; }
-            .btn-correo { font-size: 0.8rem; padding: 12px 18px; max-width: 90vw; word-break: break-all; }
-            .btn-linkedin { width: 45px; height: 45px; }
+            .contacto-flex { flex-direction: column; align-items: flex-start !important; gap: 30px; }
+            .contacto-izq { width: 100%; text-align: left !important; }
+            .botones-contacto { display: flex !important; flex-direction: row !important; justify-content: flex-start !important; align-items: center !important; gap: 12px !important; flex-wrap: nowrap !important; width: 100%; }
+            .btn-correo { font-size: 0.75rem; padding: 12px 16px; margin: 0 !important; flex: 1; max-width: none; }
+            .btn-linkedin { width: 45px !important; height: 45px !important; flex-shrink: 0 !important; margin: 0 !important; }
             .contacto-der { display: flex; justify-content: center; width: 100%; }
             .logo-contacto { height: 40px; }
             .btn-acordeon { font-size: 4.5vw; padding: 25px 0; white-space: nowrap; } 
@@ -716,7 +736,6 @@
             .play-overlay { width: 50px; height: 50px; }
             .play-triangle { border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 14px solid var(--acento); }
         }
-} /* Cierre de @media (max-width: 768px) de L503 */
 
 .btn-arriba {
             position: fixed;
@@ -837,13 +856,13 @@
     <button id="lang-toggle" class="lang-toggle-btn">EN / ES</button>
 
     <!-- Menú hamburguesa móvil -->
-    <button id="hamburger-btn" class="hamburger-btn" style="display:none;" aria-label="Menu">
+    <button id="hamburger-btn" class="hamburger-btn" aria-label="Menu">
         <span></span>
         <span></span>
         <span></span>
     </button>
-    <div id="mobile-menu-overlay" class="mobile-menu-overlay" style="display:none;"></div>
-    <div id="mobile-menu-panel" class="mobile-menu-panel" style="display:none;">
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay"></div>
+    <div id="mobile-menu-panel" class="mobile-menu-panel">
         <a href="#trabajo" class="mobile-menu-link trans" data-es="MIS PROYECTOS" data-en="MY PROJECTS">MIS PROYECTOS</a>
         <a href="#about" class="mobile-menu-link trans" data-es="SOBRE MÍ" data-en="ABOUT ME">SOBRE MÍ</a>
         <a href="#contacto" class="mobile-menu-link trans" data-es="CONTACTO" data-en="CONTACT">CONTACTO</a>
@@ -1190,10 +1209,10 @@
                 
                 <div class="botones-contacto">
                     <!-- Aquí pones el correo real para que envíe el mail -->
-                    <a href="mailto:tu_correo_real@gmail.com" class="btn-solido btn-correo">EMAIL_PLACEHOLDER@GMAIL.COM</a>
+                    <a href="mailto:CLOCDESIGN@PROTON.ME" class="btn-solido btn-correo">CLOCDESIGN@PROTON.ME</a>
                     
                    <!-- Aquí pones el link real de tu LinkedIn -->
-<a href="URL_LINKEDIN_AQUI" target="_blank" class="btn-solido btn-linkedin" aria-label="LinkedIn">
+<a href="https://www.linkedin.com/in/cloc/" target="_blank" class="btn-solido btn-linkedin" aria-label="LinkedIn">
     <svg viewBox="0 0 24 24" fill="#ffffff" width="28" height="28">
         <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/>
     </svg>
@@ -1219,15 +1238,31 @@
     <script src="https://player.vimeo.com/api/player.js"></script>
 
     <script>
-        // --- LOGO FADE ---
+        // --- LOGO Y HUD FADE ---
         window.addEventListener('scroll', () => {
-            const logo = document.getElementById('main-logo');
-            if (!logo) return;
             const scrollPos = window.scrollY;
             const fadeThreshold = 150;
             const newOpacity = Math.max(0, 1 - (scrollPos / fadeThreshold));
-            logo.style.opacity = newOpacity;
-            logo.style.pointerEvents = newOpacity < 0.1 ? 'none' : 'auto';
+            
+            const logo = document.getElementById('main-logo');
+            if (logo) {
+                logo.style.opacity = newOpacity;
+                logo.style.pointerEvents = newOpacity < 0.1 ? 'none' : 'auto';
+            }
+            
+            // Si estamos en móvil, desvanecer los elementos del HUD también
+            if (window.innerWidth <= 768) {
+                const hudElements = document.querySelectorAll('.hud-element');
+                hudElements.forEach(el => {
+                    el.style.opacity = newOpacity;
+                });
+            } else {
+                // Restaurar en desktop si se redimensiona
+                const hudElements = document.querySelectorAll('.hud-element');
+                hudElements.forEach(el => {
+                    el.style.opacity = '1';
+                });
+            }
         });
 
         // --- ANIMACIONES HERO ---
@@ -1890,24 +1925,26 @@
 // --- BOTÓN VOLVER ARRIBA ---
         const btnArriba = document.getElementById('btn-volver-arriba');
 
-        window.addEventListener('scroll', () => {
-            // Mostrar botón cuando el scroll supera el 70% de la página
-            const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollActual = window.scrollY;
-            
-            if (scrollActual > (scrollTotal * 0.7)) {
-                btnArriba.classList.add('visible');
-            } else {
-                btnArriba.classList.remove('visible');
-            }
-        });
-
-        btnArriba.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+        if (btnArriba) {
+            window.addEventListener('scroll', () => {
+                // Mostrar botón cuando el scroll supera el 70% de la página
+                const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollActual = window.scrollY;
+                
+                if (scrollActual > (scrollTotal * 0.7)) {
+                    btnArriba.classList.add('visible');
+                } else {
+                    btnArriba.classList.remove('visible');
+                }
             });
-        });
+
+            btnArriba.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
 
         // --- MENÚ HAMBURGUESA MÓVIL ---
         const hamburgerBtn = document.getElementById('hamburger-btn');
