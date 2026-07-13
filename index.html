@@ -531,20 +531,115 @@
 
             /* Alineamos el botón a la IZQUIERDA en la misma línea central del logo */
            /* --- BOTÓN DE IDIOMA BLINDADO ANTI-SALTOS --- */
+            /* --- Botón de idioma al DERECHO en móvil --- */
             .lang-toggle-btn { 
                 position: fixed !important; 
                 top: 45px !important; 
-                left: 15px !important; 
-                /* Forzamos el scale(1) en reposo para que la transición no se confunda */
+                left: auto !important; 
+                right: 15px !important; 
                 transform: translateY(-50%) scale(1) !important; 
                 margin: 0 !important;
             }
 
-            /* Mantenemos el eje Y intacto durante la animación táctil */
             .lang-toggle-btn:hover,
             .lang-toggle-btn:active,
             .lang-toggle-btn:focus { 
                 transform: translateY(-50%) scale(1.05) !important; 
+            }
+
+            /* --- Botón hamburguesa al IZQUIERDO en móvil --- */
+            .hamburger-btn {
+                display: flex !important;
+                position: fixed;
+                top: 45px;
+                left: 15px;
+                transform: translateY(-50%);
+                z-index: 10006;
+                background: rgba(204, 0, 204, 0.15);
+                border: 1px solid var(--acento);
+                color: var(--texto);
+                width: 40px;
+                height: 40px;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 5px;
+                cursor: pointer;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 0 10px rgba(204, 0, 204, 0.2);
+                transition: all 0.3s ease;
+                padding: 0;
+            }
+            .hamburger-btn span {
+                display: block;
+                width: 20px;
+                height: 2px;
+                background: var(--texto);
+                transition: all 0.3s ease;
+            }
+            .hamburger-btn.abierto span:nth-child(1) {
+                transform: translateY(7px) rotate(45deg);
+            }
+            .hamburger-btn.abierto span:nth-child(2) {
+                opacity: 0;
+            }
+            .hamburger-btn.abierto span:nth-child(3) {
+                transform: translateY(-7px) rotate(-45deg);
+            }
+
+            /* --- Panel lateral deslizante --- */
+            .mobile-menu-panel {
+                display: block !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 75vw;
+                max-width: 300px;
+                height: 100vh;
+                background: rgba(2, 2, 2, 0.97);
+                backdrop-filter: blur(15px);
+                border-right: 1px solid var(--acento);
+                z-index: 10005;
+                transform: translateX(-100%);
+                transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                padding: 100px 30px 40px;
+                box-shadow: 5px 0 30px rgba(204, 0, 204, 0.1);
+            }
+            .mobile-menu-panel.abierto {
+                transform: translateX(0);
+            }
+            .mobile-menu-panel a {
+                display: block;
+                font-family: 'Share Tech Mono', monospace;
+                color: var(--texto);
+                text-decoration: none;
+                font-size: 1.1rem;
+                padding: 20px 0;
+                border-bottom: 1px solid rgba(204, 0, 204, 0.2);
+                letter-spacing: 2px;
+                transition: color 0.3s ease, padding-left 0.3s ease;
+            }
+            .mobile-menu-panel a:hover,
+            .mobile-menu-panel a:active {
+                color: var(--acento);
+                padding-left: 10px;
+            }
+
+            /* Overlay oscuro detrás del menú */
+            .mobile-menu-overlay {
+                display: block !important;
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.6);
+                z-index: 10004;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.35s ease, visibility 0.35s ease;
+            }
+            .mobile-menu-overlay.abierto {
+                opacity: 1;
+                visibility: visible;
             }
 
             /* Bajamos el HUD para que respire debajo del botón */
@@ -554,45 +649,17 @@
 
 /* --- CORRECCIÓN DE DESBORDAMIENTO EN ESPAÑOL --- */
         .sub-estado-2 {
-            white-space: normal !important; /* Fuerza al texto a saltar a una segunda línea si no cabe */
-            width: 90%; /* Da un 5% de margen de respiración a cada lado de la pantalla */
-            margin: 0 auto; /* Mantiene el bloque perfectamente centrado */
+            white-space: normal !important;
+            width: 90%;
+            margin: 0 auto;
             text-align: center; 
-            line-height: 1.4; /* Espaciado cómodo si el texto se divide en dos líneas */
-            font-size: 0.75rem; /* Achica un toque la letra solo en teléfonos */
+            line-height: 1.4;
+            font-size: 0.75rem;
         }
             
-            /* --- A. NAVEGACIÓN MÓVIL (Sticky Bottom Bar) --- */
-            /* En lugar de ocultar el menú, lo convertimos en una barra inferior estilo app */
+            /* --- A. NAVEGACIÓN MÓVIL: Ocultar barra inferior --- */
             nav { 
-                display: flex; 
-                position: fixed; 
-                bottom: 0; 
-                left: 0; 
-                width: 100%; 
-                background: rgba(2, 2, 2, 0.95); 
-                backdrop-filter: blur(10px); 
-                border-top: 1px solid var(--acento); 
-                padding: 15px 0; 
-                justify-content: space-evenly; 
-                z-index: 10010; 
-                /* Hack moderno para iPhones sin botón (Notch/Dynamic Island) */
-                padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
-            }
-            
-            nav a { 
-                font-size: 0.75rem; 
-                padding: 5px 10px; 
-                background: transparent; 
-                border: none; 
-                clip-path: none; 
-                text-align: center;
-            }
-            
-            nav a:hover { 
-                background: transparent; 
-                color: var(--acento); 
-                box-shadow: none; 
+                display: none !important; 
             }
 
             .decoracion-vertical, .cross-mark { display: none; }
@@ -613,7 +680,7 @@
             }
 
             /* Subimos el botón de "volver arriba" para que no quede tapado por el nuevo menú inferior */
-            .btn-arriba { bottom: 90px; right: 20px; width: 45px; height: 45px; }
+            .btn-arriba { bottom: 40px; right: 20px; width: 45px; height: 45px; }
 
             /* ... (A partir de aquí mantienes el resto de tu código @media intacto, como el about-flex, etc.) ... */
             .about-flex { flex-direction: column-reverse; gap: 50px; perspective: none; }
@@ -624,9 +691,12 @@
             .texto-alto-contraste p { font-size: 1rem; }
             .about-visual-content { padding: 0; }
             .placeholder-avanzado { aspect-ratio: 1/1; max-width: 100%; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); transform: none !important; }
-            .contacto-flex { flex-direction: column; align-items: flex-start; gap: 30px; }
-            .btn-correo { font-size: 0.9rem; padding: 12px 20px; }
+            .contacto-flex { flex-direction: column; align-items: center; gap: 30px; text-align: center; }
+            .contacto-izq { display: flex; flex-direction: column; align-items: center; width: 100%; }
+            .botones-contacto { flex-wrap: wrap; justify-content: center; }
+            .btn-correo { font-size: 0.8rem; padding: 12px 18px; max-width: 90vw; word-break: break-all; }
             .btn-linkedin { width: 45px; height: 45px; }
+            .contacto-der { display: flex; justify-content: center; width: 100%; }
             .logo-contacto { height: 40px; }
             .btn-acordeon { font-size: 4.5vw; padding: 25px 0; white-space: nowrap; } 
             .icono-acordeon { font-size: 6vw; margin-right: 10px; }
@@ -765,6 +835,19 @@
 <body>
 
     <button id="lang-toggle" class="lang-toggle-btn">EN / ES</button>
+
+    <!-- Menú hamburguesa móvil -->
+    <button id="hamburger-btn" class="hamburger-btn" style="display:none;" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay" style="display:none;"></div>
+    <div id="mobile-menu-panel" class="mobile-menu-panel" style="display:none;">
+        <a href="#trabajo" class="mobile-menu-link trans" data-es="MIS PROYECTOS" data-en="MY PROJECTS">MIS PROYECTOS</a>
+        <a href="#about" class="mobile-menu-link trans" data-es="SOBRE MÍ" data-en="ABOUT ME">SOBRE MÍ</a>
+        <a href="#contacto" class="mobile-menu-link trans" data-es="CONTACTO" data-en="CONTACT">CONTACTO</a>
+    </div>
 
     <div class="ambient-glow glow-1"></div>
     <div class="ambient-glow glow-2"></div>
@@ -1825,6 +1908,46 @@
                 behavior: 'smooth'
             });
         });
+
+        // --- MENÚ HAMBURGUESA MÓVIL ---
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+        if (hamburgerBtn && mobileMenuPanel && mobileMenuOverlay) {
+            function toggleMobileMenu() {
+                const abierto = hamburgerBtn.classList.contains('abierto');
+                hamburgerBtn.classList.toggle('abierto');
+                mobileMenuPanel.classList.toggle('abierto');
+                mobileMenuOverlay.classList.toggle('abierto');
+                // Bloquear scroll del body cuando el menú está abierto
+                document.body.style.overflow = abierto ? '' : 'hidden';
+            }
+
+            function cerrarMobileMenu() {
+                hamburgerBtn.classList.remove('abierto');
+                mobileMenuPanel.classList.remove('abierto');
+                mobileMenuOverlay.classList.remove('abierto');
+                document.body.style.overflow = '';
+            }
+
+            hamburgerBtn.addEventListener('click', toggleMobileMenu);
+            mobileMenuOverlay.addEventListener('click', cerrarMobileMenu);
+
+            // Cerrar menú y navegar al hacer click en un link
+            mobileMenuPanel.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    cerrarMobileMenu();
+                    const target = document.querySelector(link.getAttribute('href'));
+                    if (target) {
+                        setTimeout(() => {
+                            target.scrollIntoView({ behavior: 'smooth' });
+                        }, 350); // Esperar a que se cierre el menú
+                    }
+                });
+            });
+        }
     </script>
 <button id="btn-volver-arriba" class="btn-arriba">
         <span>↑</span>
