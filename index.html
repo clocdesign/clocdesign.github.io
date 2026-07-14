@@ -711,7 +711,7 @@
             .texto-alto-contraste h3 { font-size: 7.5vw; }
             .texto-alto-contraste p { font-size: 1rem; }
             .about-visual-content { padding: 0; }
-            .placeholder-avanzado { aspect-ratio: 1/1; max-width: 100%; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+            .placeholder-avanzado { aspect-ratio: 1/1; max-width: 100%; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); transform: none !important; }
             .contacto-flex { flex-direction: column; align-items: flex-start !important; gap: 30px; }
             .contacto-izq { width: 100%; text-align: left !important; }
             .botones-contacto { display: flex !important; flex-direction: row !important; justify-content: flex-start !important; align-items: center !important; gap: 12px !important; flex-wrap: nowrap !important; width: 100%; }
@@ -1303,10 +1303,7 @@
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
 
-        // --- EFECTOS 3D MOUSE (ESCRITORIO) Y GIROSCOPIO (MÓVIL) ---
-        const tarjetaFoto = document.getElementById('tarjeta-foto');
-        
-        // 1. EFECTO PARA ESCRITORIO (Mantenemos tu código original intacto)
+        // --- EFECTOS 3D MOUSE ---
         document.addEventListener('mousemove', (e) => {
             if (isMobile) return; 
             const esfera = document.getElementById('esfera-3d');
@@ -1317,6 +1314,7 @@
             }
         });
 
+        const tarjetaFoto = document.getElementById('tarjeta-foto');
         if (!isMobile && tarjetaFoto) { 
             tarjetaFoto.addEventListener('mousemove', (e) => {
                 tarjetaFoto.classList.remove('reset-animacion');
@@ -1332,57 +1330,6 @@
             tarjetaFoto.addEventListener('mouseleave', () => {
                 tarjetaFoto.classList.add('reset-animacion');
                 tarjetaFoto.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-            });
-        }
-
-        // 2. EFECTO DE GIROSCOPIO PARA MÓVIL (Alto Rendimiento)
-        if (isMobile && tarjetaFoto) {
-            let initialBeta = null;
-            let initialGamma = null;
-            let isTicking = false;
-
-            window.addEventListener('deviceorientation', (e) => {
-                // Si el dispositivo no tiene giroscopio, abortamos
-                if (e.beta === null || e.gamma === null) return;
-
-                // Calibramos la posición inicial basándonos en cómo sostiene el teléfono al cargar la página
-                if (initialBeta === null) initialBeta = e.beta;
-                if (initialGamma === null) initialGamma = e.gamma;
-
-                // Calculamos la diferencia relativa
-                let diffBeta = e.beta - initialBeta;
-                let diffGamma = e.gamma - initialGamma;
-
-                // Usamos requestAnimationFrame para no saturar la GPU del teléfono
-                if (!isTicking) {
-                    window.requestAnimationFrame(() => {
-                        // Limitamos el giro a un máximo de 15 grados para que no se voltee la imagen
-                        const maxTilt = 15;
-                        const x = Math.max(-maxTilt, Math.min(maxTilt, diffBeta));
-                        const y = Math.max(-maxTilt, Math.min(maxTilt, diffGamma));
-
-                        // Aplicamos el efecto. Nota: Invertimos 'y' para que el movimiento se sienta natural
-                        tarjetaFoto.style.transform = `perspective(1000px) rotateX(${x}deg) rotateY(${y}deg)`;
-                        isTicking = false;
-                    });
-                    isTicking = true;
-                }
-            }, { passive: true }); // passive: true le dice al navegador que este evento no bloqueará el scroll, mejorando el rendimiento.
-            
-            // 2.1 PARCHE PARA iOS (iPhone): 
-            // Safari bloquea el giroscopio por defecto. Pedimos permiso sutilmente si el usuario toca la foto.
-            tarjetaFoto.addEventListener('click', () => {
-                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    DeviceOrientationEvent.requestPermission()
-                        .then(permissionState => {
-                            if (permissionState === 'granted') {
-                                // Si da permiso, recalibramos
-                                initialBeta = null; 
-                                initialGamma = null;
-                            }
-                        })
-                        .catch(console.error);
-                }
             });
         }
 
