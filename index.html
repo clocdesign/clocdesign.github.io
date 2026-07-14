@@ -2370,7 +2370,15 @@
                     const targets = contenido.querySelectorAll('.type-target');
                     targets.forEach(target => target.innerHTML = target.getAttribute('data-text'));
 
-                    contenido.style.maxHeight = contenido.scrollHeight + 400 + "px";
+                    // Dar un margen inicial alto para que la transición sea fluida
+contenido.style.maxHeight = contenido.scrollHeight + 2500 + "px";
+
+// Liberar el límite de altura justo después de que termine la animación (600ms)
+setTimeout(() => {
+    if (this.classList.contains('activo')) {
+        contenido.style.maxHeight = 'max-content';
+    }
+}, 600);
 
                     targets.forEach(target => startTyping(target));
                 }
