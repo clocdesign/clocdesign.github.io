@@ -1542,7 +1542,7 @@
                     opacity: 0.5;
                     transition: transform 0.3s ease-out, opacity 0.3s ease-out;
                     transform-origin: center center;
-                    will-change: transform, opacity;
+
 
                     border-color: var(--acento) !important;
                     box-shadow: 0 0 6px rgba(204, 0, 204, 0.35);
@@ -2367,14 +2367,14 @@
                     targets.forEach(target => target.innerHTML = target.getAttribute('data-text'));
 
                     // Dar un margen inicial alto para que la transición sea fluida
-contenido.style.maxHeight = contenido.scrollHeight + 2500 + "px";
+                    contenido.style.maxHeight = (contenido.scrollHeight + 150) + "px";
 
-// Liberar el límite de altura justo después de que termine la animación (600ms)
-setTimeout(() => {
-    if (this.classList.contains('activo')) {
-        contenido.style.maxHeight = 'max-content';
-    }
-}, 600);
+                    // Liberar el límite de altura justo después de que termine la animación (600ms)
+                    setTimeout(() => {
+                        if (this.classList.contains('activo')) {
+                            contenido.style.maxHeight = 'max-content';
+                        }
+                    }, 600);
 
                     targets.forEach(target => startTyping(target));
                 }
@@ -2492,6 +2492,12 @@ setTimeout(() => {
                         const clonB = item.cloneNode(true);
                         clonA.classList.add('clon-infinito');
                         clonB.classList.add('clon-infinito');
+                        // Forzar lazy load en imágenes clonadas para no saturar la red
+                        clonA.querySelectorAll('img').forEach(img => img.setAttribute('loading', 'lazy'));
+                        clonB.querySelectorAll('img').forEach(img => img.setAttribute('loading', 'lazy'));
+                        // Limpiar iframes de los clones para no multiplicar instancias de Vimeo en memoria
+                        clonA.querySelectorAll('iframe').forEach(iframe => iframe.remove());
+                        clonB.querySelectorAll('iframe').forEach(iframe => iframe.remove());
                         clonesAntes.push(clonA);
                         clonesDespues.push(clonB);
                     });
@@ -2589,6 +2595,12 @@ setTimeout(() => {
                         const clonB = item.cloneNode(true);
                         clonA.classList.add('clon-infinito');
                         clonB.classList.add('clon-infinito');
+                        // Forzar lazy load en imágenes clonadas para no saturar la red
+                        clonA.querySelectorAll('img').forEach(img => img.setAttribute('loading', 'lazy'));
+                        clonB.querySelectorAll('img').forEach(img => img.setAttribute('loading', 'lazy'));
+                        // Limpiar iframes de los clones para no multiplicar instancias de Vimeo en memoria
+                        clonA.querySelectorAll('iframe').forEach(iframe => iframe.remove());
+                        clonB.querySelectorAll('iframe').forEach(iframe => iframe.remove());
                         clonesAntes.push(clonA);
                         clonesDespues.push(clonB);
                     });
