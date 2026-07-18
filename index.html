@@ -148,10 +148,6 @@
                 z-index: 800;
                 pointer-events: none;
                 opacity: 0.35;
-                will-change: transform;
-                /* NUEVO: Prepara al navegador para optimizar */
-                transform: translateZ(0);
-                /* NUEVO: Fuerza a usar la tarjeta gráfica separando la capa */
             }
 
             .vignette {
@@ -163,10 +159,6 @@
                 background: radial-gradient(circle, transparent 50%, rgba(0, 0, 0, 0.8) 100%);
                 z-index: 799;
                 pointer-events: none;
-                will-change: transform;
-                /* NUEVO */
-                transform: translateZ(0);
-                /* NUEVO */
             }
 
             /* HUD ELEMENTS Y BOTÓN DE IDIOMA */
@@ -1516,6 +1508,9 @@
             /* --- OPTIMIZACIÓN DE GALERÍAS EN MÓVIL --- */
             @media (max-width: 768px) {
 
+                /* Reducir blur de ambient-glow para evitar colapso de VRAM */
+                .ambient-glow { filter: blur(40px); opacity: 0.1; }
+
                 /* Bloquear todo movimiento horizontal de la página en iOS */
                 html,
                 body {
@@ -1533,6 +1528,7 @@
                     align-items: center;
                     -webkit-overflow-scrolling: touch;
                     overscroll-behavior: contain;
+                    contain: paint layout;
                 }
 
                 .item-scroll {
