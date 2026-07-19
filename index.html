@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     <title>CLOC by DANIEL LUGO PORTFOLIO</title>
 
 <!-- Core Metadata -->
@@ -56,8 +56,8 @@
             }
 
             html, body {
-                touch-action: pan-x pan-y;
-                /* Explicito: solo permite paneo, mata zoom en WebKit */
+                touch-action: manipulation;
+                /* Permite paneo nativo pero desactiva pinch-to-zoom y double-tap-to-zoom */
             }
 
             body {
@@ -3010,38 +3010,43 @@
             });
         }
 
-        // --- BLOQUEO DEFINITIVO DE ZOOM EN MÓVIL (iOS Safari WebKit + Chrome) ---
+        // --- BLOQUEO DEFINITIVO DE ZOOM EN MÓVIL (Versión Reforzada) ---
         (function() {
-            // 1. Matar gesture events nativos de iOS (pinch/rotate) en document Y window
+            // 1. Matar gesture events nativos de iOS (pinch/rotate)
             ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
-                document.addEventListener(evt, function(e) { e.preventDefault(); }, { passive: false });
-                window.addEventListener(evt, function(e) { e.preventDefault(); }, { passive: false });
+                document.addEventListener(evt, function(e) { 
+                    e.preventDefault(); 
+                }, { passive: false });
             });
 
-            // 2. Bloquear touchstart con 2+ dedos
-            function blockTouchStart(e) {
+            // 2. Bloquear cualquier toque que involucre más de un dedo (Pinch)
+            document.addEventListener('touchstart', function(e) {
                 if (e.touches && e.touches.length > 1) {
-                    e.preventDefault();
+                    if (e.cancelable) e.preventDefault();
                 }
-            }
-            document.addEventListener('touchstart', blockTouchStart, { passive: false });
+            }, { passive: false });
 
-            // 3. Bloquear touchmove con 2+ dedos O si e.scale indica zoom
-            function blockTouchMove(e) {
-                if ((e.touches && e.touches.length > 1) || (e.scale && e.scale !== 1)) {
-                    e.preventDefault();
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches && e.touches.length > 1) {
+                    if (e.cancelable) e.preventDefault();
                 }
-            }
-            document.addEventListener('touchmove', blockTouchMove, { passive: false });
+            }, { passive: false });
 
-            // 4. Matar double-tap-to-zoom residual via touchend timing
+            // 3. Matar double-tap-to-zoom 
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
                 const now = Date.now();
                 if ((now - lastTouchEnd) <= 300) {
-                    e.preventDefault();
+                    if (e.cancelable) e.preventDefault();
                 }
                 lastTouchEnd = now;
+            }, { passive: false });
+
+            // 4. Prevenir zoom con teclado en escritorio (Ctrl + Scroll)
+            document.addEventListener('wheel', function(e) {
+                if (e.ctrlKey) {
+                    if (e.cancelable) e.preventDefault();
+                }
             }, { passive: false });
         })();
 
