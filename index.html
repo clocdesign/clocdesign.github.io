@@ -1528,7 +1528,7 @@
                     scroll-snap-type: x mandatory;
                     padding: 20px 15vw !important;
                     /* Vertical: espacio para scale(1.05) sin recortar */
-                    gap: 12px !important;
+                    gap: 24px !important;
                     scroll-behavior: auto;
                     align-items: center;
                     -webkit-overflow-scrolling: touch;
@@ -1536,12 +1536,18 @@
                     contain: paint layout;
                 }
 
+                /* Apagar transiciones mientras el usuario desliza */
+                .galeria-horizontal.is-scrolling .item-scroll {
+                    transition: none !important;
+                    pointer-events: none !important;
+                }
+
                 .item-scroll {
                     flex: 0 0 70vw !important;
                     height: auto !important;
                     scroll-snap-align: center;
-                    scroll-snap-stop: always;
-                    /* Un item por swipe — ya no pelea con el loop debounced */
+                    scroll-snap-stop: normal;
+                    /* normal preserva la inercia nativa de iOS */
 
                     transform: scale(0.88);
                     opacity: 0.5;
@@ -2723,6 +2729,9 @@
 
                         galeria.addEventListener('scroll', () => {
 
+                            // Marcar galería como en movimiento (apaga transiciones CSS)
+                            galeria.classList.add('is-scrolling');
+
                             // ── 1. EMERGENCIA: borde absoluto del contenedor (O(1), ultra barato) ──
                             // Solo se activa si el usuario llegó físicamente al límite del scroll.
                             if (!reposicionando) {
@@ -2737,16 +2746,17 @@
                             }
 
                             // ── 2. DEBOUNCED: saltar cuando el scroll se detenga (150ms) ──
-                            // Esto NUNCA interrumpe una animación de scroll-snap en progreso.
-                            // El salto es invisible porque el contenido clon/original es idéntico.
                             if (scrollEndTimer) clearTimeout(scrollEndTimer);
                             scrollEndTimer = setTimeout(() => {
+                                // Quitar estado de scroll activo y actualizar item central
+                                galeria.classList.remove('is-scrolling');
+                                actualizarCentro();
+
                                 if (!reposicionando) {
                                     const idx = indiceCentral();
                                     if (idx < totalOriginales || idx >= totalOriginales * 2) {
                                         reposicionando = true;
                                         ejecutarSalto();
-                                        // 2 frames para que el browser pinte el estado final
                                         requestAnimationFrame(() => {
                                             requestAnimationFrame(() => {
                                                 reposicionando = false;
@@ -2755,10 +2765,6 @@
                                     }
                                 }
                             }, 150);
-
-                            // ── 3. VISUAL UPDATE (rAF throttled) ──
-                            if (scrollRAF) cancelAnimationFrame(scrollRAF);
-                            scrollRAF = requestAnimationFrame(actualizarCentro);
 
                         }, { passive: true });
 
