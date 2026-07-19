@@ -39,6 +39,11 @@
                 cursor: crosshair;
             }
 
+            html, body {
+                touch-action: manipulation;
+                /* Mata double-tap-to-zoom nativo sin romper scroll */
+            }
+
             body {
                 background-color: var(--fondo);
                 color: var(--texto);
@@ -47,8 +52,6 @@
                 scroll-behavior: smooth;
                 overflow-anchor: none;
                 /* <-- ESTE COMANDO EVITA EL REBOTE HACIA ARRIBA */
-                touch-action: pan-x pan-y;
-                /* Bloquea pinch-to-zoom sin afectar scroll ni swipe */
             }
 
             /* --- DETALLES DE FONDO --- */
@@ -2973,16 +2976,21 @@
             });
         }
 
-        // --- BLOQUEO ABSOLUTO DE ZOOM EN MÓVIL (multi-touch) ---
+        // --- BLOQUEO NUCLEAR DE ZOOM EN MÓVIL (iOS Safari + Chrome) ---
         (function() {
-            function blockZoom(e) {
+            // Bloquear pinch-to-zoom (2+ dedos)
+            function blockMultiTouch(e) {
                 if (e.touches && e.touches.length > 1) {
                     e.preventDefault();
                 }
             }
-            document.addEventListener('touchstart', blockZoom, { passive: false });
-            document.addEventListener('touchmove', blockZoom, { passive: false });
-            document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
+            document.addEventListener('touchstart', blockMultiTouch, { passive: false });
+            document.addEventListener('touchmove', blockMultiTouch, { passive: false });
+
+            // Matar gesture events nativos de iOS (pinch/rotate)
+            ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+                document.addEventListener(evt, function(e) { e.preventDefault(); }, { passive: false });
+            });
         })();
 
         // --- LIGHTBOX CONDICIONADO: SOLO MÓVIL ---
