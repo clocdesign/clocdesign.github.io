@@ -840,12 +840,15 @@
                 z-index: 850;
             }
 
-            .item-scroll:hover {
-                transform: scale(1.03);
-                z-index: 851;
-                box-shadow: 0 15px 40px rgba(204, 0, 204, 0.2);
-                border-color: var(--acento);
-            }
+            /* Esto le dice al navegador que el hover SOLO debe existir en pantallas con Mouse */
+@media (hover: hover) {
+    .item-scroll:hover {
+        transform: scale(1.03);
+        z-index: 851;
+        box-shadow: 0 15px 40px rgba(204, 0, 204, 0.2);
+        border-color: var(--acento);
+    }
+}
 
             .ar-cuadrado {
                 aspect-ratio: 1 / 1;
@@ -2809,14 +2812,12 @@
 
                             // 2. Esperamos un instante para que cargue el iframe y luego iniciamos la API de Vimeo
                             if (!iframe.vPlayer) {
-                                setTimeout(() => {
-                                    iframe.vPlayer = new Vimeo.Player(iframe);
-                                    iframe.vPlayer.ready().then(() => {
-                                        iframe.vPlayer.setMuted(true).catch(() => { });
-                                        iframe.vPlayer.setPlaybackRate(1.3).catch(() => { });
-                                        iframe.vPlayer.play().catch(() => { });
-                                    });
-                                }, 150);
+                                iframe.vPlayer = new Vimeo.Player(iframe);
+                                iframe.vPlayer.ready().then(() => {
+                                    iframe.vPlayer.setMuted(true).catch(() => { });
+                                    iframe.vPlayer.setPlaybackRate(1.3).catch(() => { });
+                                    iframe.vPlayer.play().catch(() => { });
+                                });
                             } else {
                                 // Si ya fue inicializado antes, solo le damos play
                                 iframe.vPlayer.setMuted(true).then(() => {
@@ -2831,7 +2832,7 @@
                             }
                         }
                     });
-                }, { threshold: 0.05 });
+                }, { rootMargin: '100% 100%', threshold: 0.01 });
 
                 vimeoIframes.forEach(iframe => videoObserver.observe(iframe));
             }
@@ -3021,6 +3022,12 @@
             item.addEventListener('click', function(e) {
                 // Solo abrir lightbox en móvil (<=768px)
                 if (window.innerWidth <= 768) {
+                    
+                    // NUEVO: Si el elemento tocado tiene la clase 'item-video', ignoramos el clic
+                    if (this.classList.contains('item-video')) {
+                        return; 
+                    }
+                    
                     const galeria = this.closest('.galeria-horizontal');
                     if (galeria) {
                         openLightbox(galeria, this);
