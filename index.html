@@ -2,15 +2,10 @@
 <html lang="es">
 
 <head>
-    <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CLOC by DANIEL LUGO PORTFOLIO</title>
-
-    <head>
-        <meta charset="UTF-8">
-
-        <title>SYS.DANIEL.LUGO // CLOC</title>
+    <link rel="icon" type="image/png" href="favicon.png">
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2213,7 +2208,7 @@
         <span class="lightbox-btn lightbox-next" id="lightbox-next">&gt;</span>
     </div>
 
-    <script src="https://player.vimeo.com/api/player.js"></script>
+    <script src="https://player.vimeo.com/api/player.js" defer></script>
 
     <script>
         // --- LOGO Y HUD FADE (OPTIMIZADO CON RAF Y CACHÉ) ---
@@ -2928,17 +2923,23 @@
         const btnArriba = document.getElementById('btn-volver-arriba');
 
         if (btnArriba) {
+            let isScrollingArriba = false;
             window.addEventListener('scroll', () => {
-                // Mostrar botón cuando el scroll supera el 70% de la página
-                const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
-                const scrollActual = window.scrollY;
+                if (!isScrollingArriba) {
+                    window.requestAnimationFrame(() => {
+                        const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+                        const scrollActual = window.scrollY;
 
-                if (scrollActual > (scrollTotal * 0.7)) {
-                    btnArriba.classList.add('visible');
-                } else {
-                    btnArriba.classList.remove('visible');
+                        if (scrollActual > (scrollTotal * 0.7)) {
+                            btnArriba.classList.add('visible');
+                        } else {
+                            btnArriba.classList.remove('visible');
+                        }
+                        isScrollingArriba = false;
+                    });
+                    isScrollingArriba = true;
                 }
-            });
+            }, { passive: true });
 
             btnArriba.addEventListener('click', () => {
                 window.scrollTo({
