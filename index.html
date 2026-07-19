@@ -56,8 +56,9 @@
             }
 
             html, body {
-                touch-action: manipulation;
-                /* Permite paneo nativo pero desactiva pinch-to-zoom y double-tap-to-zoom */
+                touch-action: pan-y !important; /* Fuerza a ignorar pellizcos y scroll horizontal a nivel documento */
+                overscroll-behavior-y: none;
+                -webkit-text-size-adjust: 100%; /* Evita que el navegador escale fuentes que causan auto-zoom */
             }
 
             body {
@@ -3010,42 +3011,40 @@
             });
         }
 
-        // --- BLOQUEO DEFINITIVO DE ZOOM EN MÓVIL (Versión Reforzada) ---
+        // --- BLOQUEO NUCLEAR DE ZOOM EN MÓVIL ---
         (function() {
-            // 1. Matar gesture events nativos de iOS (pinch/rotate)
-            ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
-                document.addEventListener(evt, function(e) { 
-                    e.preventDefault(); 
-                }, { passive: false });
-            });
-
-            // 2. Bloquear cualquier toque que involucre más de un dedo (Pinch)
-            document.addEventListener('touchstart', function(e) {
+            // 1. Interceptar y anular cualquier intento de usar más de un dedo (Pellizco/Pinch)
+            const preventPinchZoom = (e) => {
                 if (e.touches && e.touches.length > 1) {
-                    if (e.cancelable) e.preventDefault();
+                    e.preventDefault();
+                    e.stopPropagation(); // Detiene la propagación del evento al navegador
                 }
-            }, { passive: false });
+            };
+            
+            // El 'passive: false' es obligatorio para que e.preventDefault() funcione en móviles modernos
+            document.addEventListener('touchstart', preventPinchZoom, { passive: false });
+            document.addEventListener('touchmove', preventPinchZoom, { passive: false });
 
-            document.addEventListener('touchmove', function(e) {
-                if (e.touches && e.touches.length > 1) {
-                    if (e.cancelable) e.preventDefault();
-                }
-            }, { passive: false });
+            // 2. Bloqueo específico y nativo para el motor WebKit de iOS Safari
+            document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
+            document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
+            document.addEventListener('gestureend', function(e) { e.preventDefault(); }, { passive: false });
 
-            // 3. Matar double-tap-to-zoom 
+            // 3. Matar el zoom por doble toque (Double-tap-to-zoom)
             let lastTouchEnd = 0;
             document.addEventListener('touchend', function(e) {
-                const now = Date.now();
-                if ((now - lastTouchEnd) <= 300) {
-                    if (e.cancelable) e.preventDefault();
+                const now = (new Date()).getTime();
+                // Si el tiempo entre toques es menor a 300ms, es un doble toque
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
                 }
                 lastTouchEnd = now;
             }, { passive: false });
 
-            // 4. Prevenir zoom con teclado en escritorio (Ctrl + Scroll)
+            // 4. Evitar zoom de escritorio accidental (Ctrl + Rueda del ratón)
             document.addEventListener('wheel', function(e) {
                 if (e.ctrlKey) {
-                    if (e.cancelable) e.preventDefault();
+                    e.preventDefault();
                 }
             }, { passive: false });
         })();
