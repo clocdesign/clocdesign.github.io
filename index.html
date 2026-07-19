@@ -1538,7 +1538,6 @@
 
                 /* Apagar transiciones mientras el usuario desliza */
                 .galeria-horizontal.is-scrolling .item-scroll {
-                    transition: none !important;
                     pointer-events: none !important;
                 }
 
@@ -1551,7 +1550,7 @@
 
                     transform: scale(0.88);
                     opacity: 0.5;
-                    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+                    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
                     transform-origin: center center;
 
 
@@ -2640,7 +2639,7 @@
                         // Esto evita que una imagen lateral reciba 'activa' brevemente durante el scroll
                         if (mejorItem) {
                             const mejorRect = mejorItem.getBoundingClientRect();
-                            const umbral = mejorRect.width * 0.4;
+                            const umbral = mejorRect.width * 0.75;
                             const distAlCentro = Math.abs(centroGaleria - (mejorRect.left + mejorRect.width / 2));
 
                             for (let i = 0; i < items.length; i++) {
@@ -2764,7 +2763,7 @@
                                         });
                                     }
                                 }
-                            }, 150);
+                            }, 60);
 
                         }, { passive: true });
 
