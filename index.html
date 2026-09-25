@@ -18,13 +18,32 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.clocdesign.net"> <!-- Reemplaza con tu URL real -->
     <meta property="og:image" content="https://www.clocdesign.net/foto-daniel.png"> <!-- Reemplaza con la ruta absoluta a tu imagen -->
-    <meta property="og:locale" content="en_US">
+    <meta property="og:locale" content="es_ES">
 
     <!-- Twitter Cards (For previews on X / Twitter) -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="CLOC by DANIEL LUGO | Graphic Design Portfolio">
     <meta name="twitter:description" content="Transforming technical and complex concepts into functional, high-impact visual ecosystems. Specialized in Web3, crypto, and brand identity.">
     <meta name="twitter:image" content="https://www.clocdesign.net/foto-daniel.png"> <!-- Reemplaza con la ruta absoluta a tu imagen -->
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.clocdesign.net">
+
+    <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Daniel Lugo",
+        "alternateName": "CLOC",
+        "url": "https://www.clocdesign.net",
+        "image": "https://www.clocdesign.net/foto-daniel.png",
+        "jobTitle": "Graphic Designer",
+        "description": "Venezuelan graphic designer with over 5 years of experience, specializing in branding, photomanipulation, and strategic design for Web3, cryptocurrency, and blockchain ecosystems.",
+        "knowsAbout": ["Branding", "Graphic Design", "Web3", "Photomanipulation", "Cryptocurrency", "Blockchain", "Visual Identity"],
+        "sameAs": []
+    }
+    </script>
 
     <link rel="icon" type="image/png" href="favicon.png">
 
@@ -532,7 +551,8 @@
                 display: block;
             }
 
-            .texto-alto-contraste h3 {
+            .texto-alto-contraste h3,
+            .texto-alto-contraste h1 {
                 font-size: 4vw;
                 font-weight: 900;
                 line-height: 1.1;
@@ -544,12 +564,14 @@
                 /* <-- BALANCEA EL TÍTULO COLOSAL */
             }
 
-            .texto-alto-contraste h3 span.blanco {
+            .texto-alto-contraste h3 span.blanco,
+            .texto-alto-contraste h1 span.blanco {
                 color: #ffffff;
                 text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
             }
 
-            .texto-alto-contraste h3 span.morado {
+            .texto-alto-contraste h3 span.morado,
+            .texto-alto-contraste h1 span.morado {
                 color: var(--acento);
                 text-shadow: 0 0 30px rgba(204, 0, 204, 0.5);
             }
@@ -1350,7 +1372,8 @@
                     font-size: 6vw;
                 }
 
-                .texto-alto-contraste h3 {
+                .texto-alto-contraste h3,
+                .texto-alto-contraste h1 {
                     font-size: 7.5vw;
                 }
 
@@ -1709,12 +1732,12 @@
             <div class="about-text-content reveal delay-1">
                 <span class="titulo-seccion-about trans" data-es="SOBRE MÍ" data-en="ABOUT ME">SOBRE MÍ</span>
                 <div class="texto-alto-contraste">
-                    <h3 class="trans"
+                    <h1 class="trans"
                         data-es='<span class="blanco">SOY</span> <span class="morado">DANIEL LUGO,</span> <br><span class="blanco">EL DISEÑADOR DETRÁS DE</span> <br><span class="morado">CLOC.</span>'
                         data-en='<span class="blanco">I AM</span> <span class="morado">DANIEL LUGO,</span> <br><span class="blanco">THE DESIGNER BEHIND</span> <br><span class="morado">CLOC.</span>'>
                         <span class="blanco">SOY</span> <span class="morado">DANIEL LUGO,</span> <br><span
                             class="blanco">EL DISEÑADOR DETRÁS DE</span> <br><span class="morado">CLOC.</span>
-                    </h3>
+                    </h1>
                     <p class="destacado trans" data-es="O mejor dicho, soy la única persona detrás de CLOC..."
                         data-en="Or rather, I am the only person behind CLOC...">O mejor dicho, soy la única persona
                         detrás de CLOC...</p>
@@ -1890,15 +1913,15 @@
                         </div>
                     </div>
                     <div class="galeria-horizontal">
-                        <div class="item-scroll ar-mix"><img src="img/z1.avif" alt="Placeholder" loading="lazy"
+                        <div class="item-scroll ar-mix"><img src="img/z1.avif" alt="Zaro Coin social media design 1" loading="lazy"
                                 decoding="async"></div>
-                        <div class="item-scroll ar-retrato"><img src="img/z2.avif" alt="Placeholder" loading="lazy"
+                        <div class="item-scroll ar-retrato"><img src="img/z2.avif" alt="Zaro Coin social media design 2" loading="lazy"
                                 decoding="async"></div>
-                        <div class="item-scroll ar-cuadrado"><img src="img/z3.avif" alt="Placeholder" loading="lazy"
+                        <div class="item-scroll ar-cuadrado"><img src="img/z3.avif" alt="Zaro Coin social media design 3" loading="lazy"
                                 decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/z4.avif" alt="Placeholder" loading="lazy"
+                        <div class="item-scroll ar-mix"><img src="img/z4.avif" alt="Zaro Coin social media design 4" loading="lazy"
                                 decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/z5.avif" alt="Placeholder" loading="lazy"
+                        <div class="item-scroll ar-mix"><img src="img/z5.avif" alt="Zaro Coin social media design 5" loading="lazy"
                                 decoding="async"></div>
 
                     </div>
@@ -1950,12 +1973,12 @@
                                 src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
 
-                        <div class="item-scroll ar-mix"><img src="img/w1.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/w2.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/w3.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/w4.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/w6.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/w7.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w1.avif" alt="Workflow717 brand identity design 1" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w2.avif" alt="Workflow717 brand identity design 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w3.avif" alt="Workflow717 brand identity design 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w4.avif" alt="Workflow717 brand identity design 4" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w6.avif" alt="Workflow717 brand identity design 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/w7.avif" alt="Workflow717 brand identity design 6" loading="lazy" decoding="async"></div>
                     </div>
 
                     <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 35px;">
@@ -1987,12 +2010,12 @@
                                 data-src="https://player.vimeo.com/video/1182352140?background=1&autoplay=1&loop=1&muted=1&autopause=0&playsinline=1"
                                 src="" frameborder="0" allow="autoplay; fullscreen"></iframe>
                         </div>
-                        <div class="item-scroll ar-mix"><img src="img/R2.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/R3.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/R7.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/R4.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/R5.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
-                        <div class="item-scroll ar-mix"><img src="img/R6.avif" alt="Placeholder" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/R2.avif" alt="Rag N Mop visual design 1" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/R3.avif" alt="Rag N Mop visual design 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/R7.avif" alt="Rag N Mop visual design 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/R4.avif" alt="Rag N Mop visual design 4" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/R5.avif" alt="Rag N Mop visual design 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-mix"><img src="img/R6.avif" alt="Rag N Mop visual design 6" loading="lazy" decoding="async"></div>
 
                     </div>
 
@@ -2111,7 +2134,7 @@
                         </div>
 
                         <div class="item-scroll ar-cuadrado">
-                            <img src="img/BB1 (1).avif" alt="Placeholder Img 1" loading="lazy" decoding="async">
+                            <img src="img/BB1 (1).avif" alt="Bad Bunny fan cover art photomanipulation" loading="lazy" decoding="async">
                         </div>
 
                         <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo"
@@ -2122,7 +2145,7 @@
                         </div>
 
                         <div class="item-scroll ar-cuadrado">
-                            <img src="img/FEID1.avif" alt="Placeholder Img 2" loading="lazy" decoding="async">
+                            <img src="img/FEID1.avif" alt="Feid fan cover art photomanipulation" loading="lazy" decoding="async">
                         </div>
 
                         <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo"
@@ -2133,7 +2156,7 @@
                         </div>
 
                         <div class="item-scroll ar-cuadrado">
-                            <img src="img/DRAKE1.avif" alt="Placeholder Img 3" loading="lazy" decoding="async">
+                            <img src="img/DRAKE1.avif" alt="Drake fan cover art photomanipulation" loading="lazy" decoding="async">
                         </div>
 
                         <div class="item-scroll ar-cuadrado item-video" data-video-type="vimeo"
@@ -2144,7 +2167,7 @@
                         </div>
 
                         <div class="item-scroll ar-cuadrado">
-                            <img src="img/KANYE1.avif" alt="Placeholder Img 4" loading="lazy" decoding="async">
+                            <img src="img/KANYE1.avif" alt="Kanye West fan cover art photomanipulation" loading="lazy" decoding="async">
                         </div>
                     </div>
                     <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 35px;">

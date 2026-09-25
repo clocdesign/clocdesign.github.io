@@ -1,0 +1,8 @@
+# robots.txt — CLOC by Daniel Lugo Portfolio
+# Permitir indexación completa por buscadores e IA
+
+User-agent: *
+Allow: /
+
+# Referencia al sitemap
+Sitemap: https://www.clocdesign.net/sitemap.xml

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — CLOC by Daniel Lugo</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fondo: #050505;
+            --acento: #cc00cc;
+            --texto: #e0e0e0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--fondo);
+            color: var(--texto);
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+        .error-code {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(80px, 20vw, 200px);
+            font-weight: 700;
+            color: var(--acento);
+            text-shadow: 0 0 40px rgba(204, 0, 204, 0.5), 0 0 80px rgba(204, 0, 204, 0.2);
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+        .error-msg {
+            font-size: clamp(14px, 2vw, 18px);
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 40px;
+            max-width: 500px;
+        }
+        .error-msg span {
+            color: var(--acento);
+        }
+        .btn-volver {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            color: var(--texto);
+            background: transparent;
+            border: 1px solid rgba(204, 0, 204, 0.4);
+            padding: 12px 30px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .btn-volver:hover {
+            background: var(--acento);
+            color: #fff;
+            box-shadow: 0 0 25px rgba(204, 0, 204, 0.6);
+        }
+        .scanline-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+            background-size: 100% 2px;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanline-overlay"></div>
+    <div class="error-code">404</div>
+    <p class="error-msg">SYS.ERR — <span>SIGNAL_NOT_FOUND</span>. La página que buscas no existe o fue movida. Vuelve al inicio para explorar el portafolio.</p>
+    <a href="/" class="btn-volver">&lt; Volver al inicio &gt;</a>
+</body>
+</html>
