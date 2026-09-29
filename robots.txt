@@ -5,4 +5,4 @@ User-agent: *
 Allow: /
 
 # Referencia al sitemap
-Sitemap: https://www.clocdesign.net/sitemap.xml
+Sitemap: https://clocdesign.net/sitemap.xml

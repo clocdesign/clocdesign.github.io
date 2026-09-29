@@ -7,7 +7,7 @@
 - Brand: CLOC
 - Location: Venezuela
 - Specialization: Branding, Graphic Design, Photomanipulation, Web3, Cryptocurrency
-- Website: https://www.clocdesign.net
+- Website: https://clocdesign.net
 
 ## Featured Projects
 - SyFu: Social media visual identity for a fitness brand
