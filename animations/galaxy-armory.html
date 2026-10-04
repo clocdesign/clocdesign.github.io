@@ -1,0 +1,125 @@
+<!-- 
+  SVG Animation: "Lock & Load" (High-Velocity & Tight Loop)
+  Marca: Galaxy Armory
+  Duración: ~5.6s | Loop: Sí | Motor: GSAP 3
+  Autor: SVG Motion Studio
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galaxy Armory - High Velocity</title>
+  
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+      background-color: #302E2C;
+    }
+
+    .brand-container {
+      width: 100%;
+      height: 100%;
+      background-color: #302E2C;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .brand-svg {
+      width: 45%; 
+      height: auto;
+      overflow: visible;
+    }
+
+    .brand-shape {
+      fill: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="brand-container">
+    <svg class="brand-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1003.01 1188.66">
+      <g id="brand-group">
+        <!-- El Cerrojo / Mira -->
+        <polygon id="outer-shield" class="brand-shape" points="932.95 426.48 1003.01 374.84 1003.01 298.57 997.19 295.23 508 3.82 501.7 0 495.4 3.82 6.21 294.37 0 297.71 0 891.04 6.21 894.39 495.4 1184.94 501.7 1188.66 508 1184.94 997.19 894.39 1003.01 891.04 1003.01 474.01 736.32 673.41 736.41 673.6 736.22 673.7 750.06 718.28 752.54 725.24 758.84 745.96 758.94 746.15 759.23 745.96 912.62 632.56 921.78 625.88 921.78 844.46 919.01 846.18 504.66 1092.45 501.7 1094.17 498.74 1092.45 84 846.18 81.23 844.46 81.23 344.2 84 342.58 498.74 96.31 501.7 94.5 504.66 96.31 919.01 343.34 921.78 345.06 921.78 434.78 932.95 426.48"/>
+        <!-- El Percutor -->
+        <polygon id="inner-star" class="brand-shape" points="822.03 488.7 572.51 488.7 499.69 269.54 491.67 245.49 483.65 269.54 411.29 488.7 161.69 488.7 181.64 503.88 362.04 639.13 294.85 851.51 287.3 875.47 307.73 861.06 413.78 785.94 491.86 497.94 569.75 785.94 676.08 861.06 696.51 875.47 688.87 851.51 621.67 639.13 801.69 503.88 822.03 488.7"/>
+      </g>
+    </svg>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
+  <script>
+    gsap.set(["#outer-shield", "#inner-star", "#brand-group"], { 
+      transformOrigin: "50% 50%" 
+    });
+
+    const tl = gsap.timeline({ repeat: -1 });
+
+    // Reset explícito para garantizar un loop perfecto
+    tl.set("#brand-group", { rotation: -45, scale: 1 }, 0);
+    tl.set(["#inner-star", "#outer-shield"], { opacity: 0 }, 0);
+
+    tl
+      // 1. Tensión de Adquisición 
+      .fromTo("#outer-shield", 
+        { scale: 0.95, opacity: 0 },
+        { scale: 0.95, opacity: 0.15, duration: 0.8, ease: "power2.inOut" }, 
+        0.2
+      )
+
+      // 2. Cerrojo 
+      .to("#brand-group", 
+        { rotation: 0, duration: 0.25, ease: "expo.out" }, 
+        1.2
+      )
+      .to("#outer-shield", 
+        { scale: 1, opacity: 1, duration: 0.25, ease: "expo.out" }, 
+        1.2
+      )
+
+      // 3. Percutor 
+      .fromTo("#inner-star", 
+        { scale: 1.6, opacity: 0, rotation: 45 },
+        { scale: 1, opacity: 1, rotation: 0, duration: 0.25, ease: "expo.out" }, 
+        1.32
+      )
+
+      // 4. Retroceso Cinético
+      .to("#brand-group", 
+        { scale: 0.94, duration: 0.04, ease: "power4.out" }, 
+        1.32
+      )
+      .to("#brand-group", 
+        { scale: 1, duration: 0.25, ease: "power2.out" }, 
+        1.36
+      )
+
+      // 5. Extracción / Desenganche
+      .to("#brand-group", {
+        rotation: 45, 
+        scale: 0.7, 
+        duration: 0.2, 
+        ease: "expo.in"
+      }, 5.0)
+      .to(["#inner-star", "#outer-shield"], {
+        opacity: 0, 
+        duration: 0.12, 
+        ease: "power4.in",
+        stagger: 0.03 
+      }, 5.08)
+
+      .set({}, {}, "+=0.2");
+
+  </script>
+</body>
+</html>

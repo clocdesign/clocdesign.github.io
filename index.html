@@ -917,6 +917,21 @@
                 aspect-ratio: 904 / 1024;
             }
 
+            /* --- ANIMACIONES HTML EMBEBIDAS (iframe local) --- */
+            .item-scroll.item-html-anim {
+                background-color: #302E2C; /* Color mientras carga el iframe */
+            }
+
+            .item-html-anim .iframe-anim {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+                pointer-events: none;
+            }
+
             .item-scroll img {
                 width: 100%;
                 height: 100%;
@@ -1664,6 +1679,21 @@
                     height: 100%;
                 }
 
+                /* Animaciones HTML embebidas en móvil */
+                .item-scroll.item-html-anim {
+                    position: relative;
+                    height: auto !important;
+                    aspect-ratio: 1/1 !important;
+                }
+
+                .item-scroll.item-html-anim .iframe-anim {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+
                 .galeria-horizontal.saltando .item-scroll {
                     transition: none !important;
                 }
@@ -1955,6 +1985,37 @@
                             data-es="Arquitectura de marca, logotipos y sistemas visuales. // IDENTIDAD_CENTRAL"
                             data-en="Brand architecture, logos, and visual systems. // CORE_IDENTITY">Arquitectura de
                             marca, logotipos y sistemas visuales. <span>// IDENTIDAD_CENTRAL</span></p>
+                        <div class="proyecto-destacado">
+                            <h4 class="trans" data-delay="600" data-text="> GALAXY ARMORY" data-es="> GALAXY ARMORY"
+                                data-en="> GALAXY ARMORY">> GALAXY ARMORY</h4>
+                            <p class="type-target desktop-only" data-delay="1100"
+                                data-text="Galaxy Armory needed an identity that hits as hard as its name. I forged a visual system routed in precision and stealth. The emblem captures the front aperture of a suppressor, merging a hexagonal barrel as a G with a Texas Star as an A, while negative space reveals the internal sound chambers. The result is a brand that commands authority and is built to dominate across every surface from physical gear to digital storefronts."
+                                data-es="Galaxy Armory necesitaba una identidad que impactara con la misma fuerza que su nombre. Forjé un sistema visual trazado con precisión y sigilo. El emblema captura la apertura frontal de un silenciador, fusionando un cañón hexagonal como una G con una Estrella de Texas como una A, mientras el espacio negativo revela las cámaras internas de sonido. El resultado es una marca que impone autoridad y está construida para dominar en cualquier superficie desde el equipamiento físico hasta las vitrinas digitales."
+                                data-en="Galaxy Armory needed an identity that hits as hard as its name. I forged a visual system routed in precision and stealth. The emblem captures the front aperture of a suppressor, merging a hexagonal barrel as a G with a Texas Star as an A, while negative space reveals the internal sound chambers. The result is a brand that commands authority and is built to dominate across every surface from physical gear to digital storefronts.">
+                                Galaxy Armory needed an identity that hits as hard as its name. I forged a visual system routed in precision and stealth. The emblem captures the front aperture of a suppressor, merging a hexagonal barrel as a G with a Texas Star as an A, while negative space reveals the internal sound chambers. The result is a brand that commands authority and is built to dominate across every surface from physical gear to digital storefronts.</p>
+                            <p class="type-target mobile-only" data-delay="1100"
+                                data-text="Galaxy Armory needed an identity as powerful as its name. I built a sharp, precision-driven visual system—a brand that commands authority across every surface."
+                                data-es="Galaxy Armory necesitaba una identidad tan potente como su nombre. Construí un sistema visual afilado y preciso: una marca que impone autoridad en toda superficie."
+                                data-en="Galaxy Armory needed an identity as powerful as its name. I built a sharp, precision-driven visual system—a brand that commands authority across every surface.">
+                                Galaxy Armory necesitaba una identidad tan potente como su nombre. Construí un sistema
+                                visual afilado y preciso: una marca que impone autoridad en toda superficie.</p>
+                        </div>
+                    </div>
+                    <div class="galeria-horizontal">
+                        <div class="item-scroll ar-cuadrado item-html-anim">
+                            <iframe class="iframe-anim" loading="lazy"
+                                data-src="animations/galaxy-armory.html"
+                                src="" allow="autoplay"></iframe>
+                        </div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/GA2.avif" alt="Galaxy Armory brand design 2" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/GA3.avif" alt="Galaxy Armory brand design 3" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/GA4.avif" alt="Galaxy Armory brand design 4" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/GA5.avif" alt="Galaxy Armory brand design 5" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/GA6.avif" alt="Galaxy Armory brand design 6" loading="lazy" decoding="async"></div>
+                        <div class="item-scroll ar-cuadrado"><img src="img/GA7.avif" alt="Galaxy Armory brand design 7" loading="lazy" decoding="async"></div>
+                    </div>
+
+                    <div class="wrapper-alineacion info-proyectos-container" style="margin-top: 35px;">
                         <div class="proyecto-destacado">
                             <h4 class="trans" data-delay="600" data-text="> WORKFLOW717" data-es="> WORKFLOW717"
                                 data-en="> WORKFLOW717">> WORKFLOW717</h4>
@@ -2897,6 +2958,26 @@
             }
         }, 200);
 
+        // --- LAZY LOAD PARA ANIMACIONES HTML EMBEBIDAS (.iframe-anim) ---
+        setTimeout(() => {
+            const animIframes = document.querySelectorAll('.iframe-anim');
+            if (animIframes.length === 0) return;
+
+            const animObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const iframe = entry.target;
+                    if (entry.isIntersecting) {
+                        const realSrc = iframe.getAttribute('data-src');
+                        if (realSrc && (!iframe.src || iframe.src === '' || iframe.src === window.location.href)) {
+                            iframe.src = realSrc;
+                        }
+                    }
+                });
+            }, { rootMargin: '100% 100%', threshold: 0.01 });
+
+            animIframes.forEach(iframe => animObserver.observe(iframe));
+        }, 250);
+
         // --- SISTEMA DE TRADUCCIÓN DINÁMICO (ES / EN) ---
         let currentLang = 'es';
         const langToggleBtn = document.getElementById('lang-toggle');
@@ -3089,8 +3170,8 @@
                 // Solo abrir lightbox en móvil (<=768px)
                 if (window.innerWidth <= 768) {
                     
-                    // NUEVO: Si el elemento tocado tiene la clase 'item-video', ignoramos el clic
-                    if (this.classList.contains('item-video')) {
+                    // NUEVO: Si el elemento tocado tiene la clase 'item-video' o 'item-html-anim', ignoramos el clic
+                    if (this.classList.contains('item-video') || this.classList.contains('item-html-anim')) {
                         return; 
                     }
                     
