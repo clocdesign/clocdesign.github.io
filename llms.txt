@@ -4,7 +4,7 @@
 
 ## Site Structure & Navigation
 - Home: https://clocdesign.net/
-- Projects: https://clocdesign.net/#projects
+- Projects: https://clocdesign.net/#myprojects
 - About Me: https://clocdesign.net/#aboutme
 - Contact: https://clocdesign.net/#contact
 
