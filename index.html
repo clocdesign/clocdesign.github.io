@@ -2425,38 +2425,18 @@
             });
         }
 
-        // --- FUNCIÓN DEL EFECTO DE ESCRITURA (TYPEWRITER) ACTUALIZADA PARA MULTIIDIOMA ---
+        // --- FUNCIÓN DE ESCRITURA (AHORA INSTANTÁNEA, SIN ANIMACIÓN) ---
         function startTyping(element) {
             const text = element.getAttribute('data-text');
-            const delay = parseInt(element.getAttribute('data-delay')) || 0;
-
             if (element.delayTimeout) clearTimeout(element.delayTimeout);
             if (element.typeTimeout) clearTimeout(element.typeTimeout);
-
-            element.innerHTML = '';
-            element.classList.remove('typing-done');
-
-            element.delayTimeout = setTimeout(() => {
-                let i = 0;
-                function typeWriter() {
-                    if (i < text.length) {
-                        element.innerHTML = text.substring(0, i + 1);
-                        i++;
-                        const speed = element.tagName === 'H4' ? 30 : 10;
-                        element.typeTimeout = setTimeout(typeWriter, speed);
-                    } else {
-                        // FIX: Corregidas las variables element y text
-                        element.classList.add('typing-done');
-                        const idx = text.indexOf('//');
-                        if (idx !== -1) {
-                            element.innerHTML = text.substring(0, idx) + '<span>' + text.substring(idx) + '</span>';
-                        } else {
-                            element.innerHTML = text.replace(/ ([^ ]*)$/, '&nbsp;$1');
-                        }
-                    }
-                }
-                typeWriter();
-            }, delay);
+            element.classList.add('typing-done');
+            const idx = text.indexOf('//');
+            if (idx !== -1) {
+                element.innerHTML = text.substring(0, idx) + '<span>' + text.substring(idx) + '</span>';
+            } else {
+                element.innerHTML = text.replace(/ ([^ ]*)$/, '&nbsp;$1');
+            }
         }
 
         // --- LÓGICA DEL ACORDEÓN ACTUALIZADA PARA MULTIIDIOMA ---
@@ -2498,11 +2478,36 @@
                     contenido.style.maxHeight = (contenido.scrollHeight + 150) + "px";
 
                     // Liberar el límite de altura justo después de que termine la animación (600ms)
+                    // y corregir carruseles de escritorio + cargar iframes de animación
                     setTimeout(() => {
                         if (this.classList.contains('activo')) {
                             contenido.style.maxHeight = 'max-content';
                         }
-                    }, 600);
+
+                        // ESCRITORIO: el carrusel infinito se inicializa en DOMContentLoaded con
+                        // el acordeón cerrado → anchoSet=0 → scrollLeft=0 → apunta al clon (sin iframe).
+                        // Aquí recalculamos el ancho real y reposicionamos al set original.
+                        if (window.innerWidth > 768) {
+                            contenido.querySelectorAll('.galeria-horizontal').forEach(g => {
+                                if (g.scrollLeft < 5) {
+                                    const gap = parseInt(getComputedStyle(g).gap) || 20;
+                                    const originales = g.querySelectorAll('.item-scroll:not(.clon-infinito)');
+                                    let ancho = 0;
+                                    originales.forEach(item => { ancho += item.offsetWidth + gap; });
+                                    if (ancho > 0) g.scrollLeft = ancho;
+                                }
+                            });
+                        }
+
+                        // Cargar iframes de animación HTML embebidos (lazy load explícito al abrir)
+                        contenido.querySelectorAll('.iframe-anim').forEach(iframe => {
+                            const realSrc = iframe.getAttribute('data-src');
+                            if (realSrc && (!iframe.src || iframe.src === '' || iframe.src === window.location.href)) {
+                                iframe.src = realSrc;
+                            }
+                        });
+
+                    }, 650);
 
                     targets.forEach(target => startTyping(target));
                 }
